@@ -21,7 +21,10 @@ namespace Labb2LibraryAngular
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionToDB")));
 
-            builder.Services.AddScoped<IBookRepo, BookRepo>();
+            //builder.Services.AddScoped<IBookRepo, BookRepo>();
+
+
+
             builder.Services.AddCors((setup) => setup.AddPolicy("default", (options) =>
             {
                 options.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin();
