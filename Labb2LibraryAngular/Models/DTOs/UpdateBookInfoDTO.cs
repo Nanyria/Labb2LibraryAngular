@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Labb2LibraryAngular.Models.DTOs
 {
     public class UpdateBookInfoDTO
     {
-        public int BookID { get; set; }
+
         [Required]
         public string Title { get; set; }
         [Required]

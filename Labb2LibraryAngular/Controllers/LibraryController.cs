@@ -297,9 +297,8 @@ namespace Labb2LibraryAngular.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("{id:int}/stock")]
-        public async Task<IActionResult> UpdateBookStock([FromRoute] int id, [FromBody] UpdateBookStockDTO u_book_s_DTO)
+        [HttpPut("stock/{id}")]
+        public async Task<IActionResult> UpdateBookStock([FromRoute] int id, [FromBody] UpdateBookStockDTO updateBookStockDTO)
         {
             APIResponse response = new APIResponse
             {
@@ -307,7 +306,6 @@ namespace Labb2LibraryAngular.Controllers
                 StatusCode = System.Net.HttpStatusCode.BadRequest
             };
 
-            // Validate the DTO, if necessary
             if (!ModelState.IsValid)
             {
                 response.ErrorMessages.Add("Invalid stock data.");
@@ -319,11 +317,9 @@ namespace Labb2LibraryAngular.Controllers
                 var existingBook = await _context.Books.FindAsync(id);
                 if (existingBook != null)
                 {
-                    // Update only the stock-related field
-                    existingBook.IsInStock = u_book_s_DTO.IsInStock;
+                    existingBook.IsInStock = updateBookStockDTO.IsInStock;
                     await _context.SaveChangesAsync();
 
-                    // Return the updated book as a DTO
                     BookDTO updatedBook = _mapper.Map<BookDTO>(existingBook);
 
                     response.Result = updatedBook;
