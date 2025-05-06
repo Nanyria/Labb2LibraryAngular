@@ -1,9 +1,9 @@
 
-using Labb2LibraryAngular.Data;
-using Labb2LibraryAngular.Repositories;
+using FinalProjectLibrary.Data;
+using FinalProjectLibrary.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace Labb2LibraryAngular
+namespace FinalProjectLibrary
 {
     public class Program
     {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Labb2LibraryAngular.Data;
-using Labb2LibraryAngular.Models;
+using FinalProjectLibrary.Data;
+using FinalProjectLibrary.Models.Books;
 
-namespace Labb2LibraryAngular.Repositories
+namespace FinalProjectLibrary.Repositories
 {
     public class BookRepo : IBookRepo
     {
@@ -24,19 +24,35 @@ namespace Labb2LibraryAngular.Repositories
             _db.Books.Remove(book);
         }
 
+
         public async Task<IEnumerable<Book>> GetAllAsync()
         {
-            return await _db.Books.ToListAsync();
+            return await _db.Books
+                .Include(b => b.StatusHistory) // to access current status
+                .ToListAsync();
         }
 
         public async Task<Book> GetByIdAsync(int id)
         {
-            return await _db.Books.FirstOrDefaultAsync(b => b.BookID == id);
+            return await _db.Books
+                .Include(b => b.StatusHistory)
+                .FirstOrDefaultAsync(b => b.BookID == id);
         }
 
-        public async Task<Book> GetByTitleAsync(string title)
+        public async Task<List<Book>> GetByTitleAsync(string title)
         {
-            return await _db.Books.FirstOrDefaultAsync(b => b.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+            return await _db.Books
+                .Include(b => b.StatusHistory)
+                .Where(b => b.Title.ToLower().Contains(title.ToLower()))
+                .ToListAsync();
+        }
+
+        public async Task<List<Book>> GetByAuthorAsync(string author)
+        {
+            return await _db.Books
+                .Include(b => b.StatusHistory)
+                .Where(b => b.Author.ToLower().Contains(author.ToLower()))
+                .ToListAsync();
         }
 
         public async Task SaveAsync()

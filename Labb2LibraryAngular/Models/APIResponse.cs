@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Labb2LibraryAngular.Models
+namespace FinalProjectLibrary.Models
 {
     public class APIResponse
     {

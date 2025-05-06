@@ -1,19 +1,23 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
-namespace Labb2LibraryAngular.Models.DTOs
+namespace FinalProjectLibrary.Models.Books
 {
-    public class UpdateBookInfoDTO
+    public class Book
     {
+        [Key]
+        public int BookID { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string Title { get; set; }
 
         [Required]
-        public string Title { get; set; }
-        [Required]
+        [MaxLength(75)]
         public string Author { get; set; }
         [Required]
+        [MaxLength(25)]
         public string Genre { get; set; }
         public int PublicationYear { get; set; }
         public string BookDescription { get; set; }
-
+        public List<StatusHistoryItem> StatusHistory { get; set; } = new();
     }
 }

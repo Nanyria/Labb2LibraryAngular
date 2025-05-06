@@ -1,6 +1,7 @@
-﻿using Labb2LibraryAngular.Models;
+﻿using FinalProjectLibrary.Models.Books;
+using FinalProjectLibrary.Enums;
 
-namespace Labb2LibraryAngular.Data
+namespace FinalProjectLibrary.Data
 {
     public static class LibraryTestObjects
     {
@@ -8,35 +9,59 @@ namespace Labb2LibraryAngular.Data
         {
             new Book
             {
-                BookID = 1,
+                BookID = 101,
                 Title = "The Great Gatsby",
                 Author = "F. Scott Fitzgerald",
                 Genre = "Fiction",
                 PublicationYear = 1925,
-                BookDescription = "Lorem Ipsum",
-                IsInStock = true
+                BookDescription = "Lorem Ipsum"
             },
             new Book
             {
-                BookID = 2,
+                BookID = 102,
                 Title = "To Kill a Mockingbird",
                 Author = "Harper Lee",
                 Genre = "Fiction",
                 PublicationYear = 1960,
-                BookDescription = "Lorem Ipsum",
-                IsInStock = true
+                BookDescription = "Lorem Ipsum"
             },
             new Book
             {
-                BookID = 3,
+                BookID = 103,
                 Title = "1984",
                 Author = "George Orwell",
                 Genre = "Fiction",
                 PublicationYear = 1949,
-                BookDescription = "Lorem Ipsum",
-                IsInStock = false
+                BookDescription = "Lorem Ipsum"
+            }
+        };
+
+        public static List<StatusHistoryItem> statusHistoryItems = new List<StatusHistoryItem>
+        {
+            new StatusHistoryItem
+            {
+                StatusHistoryItemID = 1,
+                BookID = 101,
+                BookStatus = BookStatusEnum.Available,
+                Timestamp = DateTime.UtcNow.AddDays(-1),
+                Notes = "Initial status"
+            },
+            new StatusHistoryItem
+            {
+                StatusHistoryItemID = 2,
+                BookID = 102,
+                BookStatus = BookStatusEnum.Borrowed,
+                Timestamp = DateTime.UtcNow.AddDays(-2),
+                Notes = "Initial status"
+            },
+            new StatusHistoryItem
+            {
+                StatusHistoryItemID = 3,
+                BookID = 103,
+                BookStatus = BookStatusEnum.Reserved,
+                Timestamp = DateTime.UtcNow.AddDays(-3),
+                Notes = "Initial status"
             }
         };
     }
-
 }
