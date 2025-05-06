@@ -1,4 +1,5 @@
 ﻿using FinalProjectLibrary.Models.Books.BookDTOs;
+using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +43,7 @@ public class BookController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddBook([FromBody] CreateBookDTO createBookDTO)
+    public async Task<IActionResult> AddBook([FromBody] CreateBookDto createBookDTO)
     {
         var response = await _bookService.AddBookAsync(createBookDTO);
         return StatusCode((int)response.StatusCode, response);
@@ -63,9 +64,9 @@ public class BookController : ControllerBase
     }
 
     [HttpPut("stock/{id}")]
-    public async Task<IActionResult> UpdateBookStock(int id, [FromBody] UpdateBookStatusDTO updateBookStatusDTO)
+    public async Task<IActionResult> UpdateBookStock(int id, [FromBody] UpdateBookStatusDTO updateBookStatusDTO, int userId)
     {
-        var response = await _bookService.UpdateBookStockAsync(id, updateBookStatusDTO);
+        var response = await _bookService.UpdateBookStockAsync(id, updateBookStatusDTO, userId);
         return StatusCode((int)response.StatusCode, response);
     }
 }

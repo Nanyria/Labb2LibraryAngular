@@ -1,9 +1,10 @@
 ﻿using FinalProjectLibrary.Enums;
+using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Users;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace FinalProjectLibrary.Models.Books
+namespace FinalProjectLibrary.Models
 {
     public class StatusHistoryItem
     {

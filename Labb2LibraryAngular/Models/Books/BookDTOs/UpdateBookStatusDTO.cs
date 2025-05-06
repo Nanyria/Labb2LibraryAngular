@@ -10,7 +10,7 @@ namespace FinalProjectLibrary.Models.Books.BookDTOs
 
         public string Author { get; set; }
 
-        public string Genre { get; set; }
+        public GenreEnums Genre { get; set; }
         public int PublicationYear { get; set; }
         public string BookDescription { get; set; }
         public BookStatusEnum BookStatus { get; set; }

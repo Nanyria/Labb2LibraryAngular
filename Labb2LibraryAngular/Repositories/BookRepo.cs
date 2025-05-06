@@ -15,7 +15,6 @@ namespace FinalProjectLibrary.Repositories
 
         public async Task CreateBookAsync(Book book)
         {
-            //Borde det inte vara await på något sätt här?
             await _db.Books.AddAsync(book);
         }
 

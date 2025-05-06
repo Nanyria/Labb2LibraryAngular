@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FinalProjectLibrary.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace FinalProjectLibrary.Models.Books
 {
@@ -15,9 +16,12 @@ namespace FinalProjectLibrary.Models.Books
         public string Author { get; set; }
         [Required]
         [MaxLength(25)]
-        public string Genre { get; set; }
+        public GenreEnums Genre { get; set; }
         public int PublicationYear { get; set; }
         public string BookDescription { get; set; }
         public List<StatusHistoryItem> StatusHistory { get; set; } = new();
+        public BookStatusEnum BookStatus { get; set; }
+
+
     }
 }

@@ -1,8 +1,5 @@
-﻿using AutoMapper;
-using FinalProjectLibrary.Enums;
-using FinalProjectLibrary.Models;
-using FinalProjectLibrary.Models.Users;
-using FinalProjectLibrary.Repositories;
+﻿using FinalProjectLibrary.Models.Users.UserDTOs;
+using FinalProjectLibrary.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinalProjectLibrary.Controllers
@@ -11,148 +8,74 @@ namespace FinalProjectLibrary.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepo _userRepo;
-        private readonly IBookRepo _bookRepo;
-        private readonly IMapper _mapper;
+        private readonly UserService _userService;
 
-        public UserController(IUserRepo userRepo, IBookRepo bookRepo, IMapper mapper)
+        public UserController(UserService userService)
         {
-            _userRepo = userRepo;
-            _bookRepo = bookRepo;
-            _mapper = mapper;
+            _userService = userService;
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var response = await _userService.GetAllUsersAsync();
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddUser([FromBody] CreateUserDto createUserDto)
+        {
+            var response = await _userService.AddUserAsync(createUserDto);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser([FromRoute] int userId)
+        {
+            var response = await _userService.DeleteUserAsync(userId);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [HttpPut("updateAsAdmin/{userId}")]
+        public async Task<IActionResult> UpdateUserAsAdmin([FromRoute] int userId, [FromBody] UpdateUserAsAdminDto updateUserDto)
+        {
+            var response = await _userService.UpdateUserAsAdminAsync(userId, updateUserDto);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [HttpPut("update/{userId}")]
+        public async Task<IActionResult> UpdateUser([FromRoute] int userId, [FromBody] UpdateUserDto updateUserDto)
+        {
+            var response = await _userService.UpdateUserAsync(userId, updateUserDto);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserById([FromRoute] int userId)
+        {
+            var response = await _userService.GetUserByIdAsync(userId);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpPut("borrow/{userId}/{bookId}")]
         public async Task<IActionResult> BorrowBook([FromRoute] int userId, [FromRoute] int bookId)
         {
-            APIResponse response = new APIResponse
-            {
-                IsSuccess = false,
-                StatusCode = System.Net.HttpStatusCode.BadRequest
-            };
-
-            var user = await _userRepo.GetByIdAsync(userId);
-            var book = await _bookRepo.GetByIdAsync(bookId);
-            if (user != null && book != null)
-            {
-                // Add book to user's borrowed books
-                user.BorrowedBooks.Add(book);
-
-                // Create a new history record for borrowing
-                var userHistory = new UserHistory
-                {
-                    UserID = user.UserID,
-                    Action = BookStatusEnum.Borrowed,
-                    Timestamp = DateTime.UtcNow,
-                    Notes = $"Borrowed: {book.Title}"
-                };
-
-                user.UserHistory.Add(userHistory); // Add history to user
-
-                // Save changes to the repository
-                await _userRepo.SaveAsync();
-                await _bookRepo.SaveAsync();
-
-                response.IsSuccess = true;
-                response.StatusCode = System.Net.HttpStatusCode.OK;
-                response.Result = user;
-                return Ok(response);
-            }
-            else
-            {
-                response.ErrorMessages.Add("User or Book not found.");
-                response.StatusCode = System.Net.HttpStatusCode.NotFound;
-                return NotFound(response);
-            }
+            var response = await _userService.BorrowBookAsync(userId, bookId);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpPut("reserve/{userId}/{bookId}")]
         public async Task<IActionResult> ReserveBook([FromRoute] int userId, [FromRoute] int bookId)
         {
-            APIResponse response = new APIResponse
-            {
-                IsSuccess = false,
-                StatusCode = System.Net.HttpStatusCode.BadRequest
-            };
-
-            var user = await _userRepo.GetByIdAsync(userId);
-            var book = await _bookRepo.GetByIdAsync(bookId);
-            if (user != null && book != null)
-            {
-                // Add book to user's reserved books
-                user.ReservedBooks.Add(book);
-
-                // Create a new history record for reserving
-                var userHistory = new UserHistory
-                {
-                    UserID = user.UserID,
-                    Action = BookStatusEnum.Reserved,
-                    Timestamp = DateTime.UtcNow,
-                    Notes = $"Reserved: {book.Title}"
-                };
-
-                user.UserHistory.Add(userHistory); // Add history to user
-
-                // Save changes to the repository
-                await _userRepo.SaveAsync();
-                await _bookRepo.SaveAsync();
-
-                response.IsSuccess = true;
-                response.StatusCode = System.Net.HttpStatusCode.OK;
-                response.Result = user;
-                return Ok(response);
-            }
-            else
-            {
-                response.ErrorMessages.Add("User or Book not found.");
-                response.StatusCode = System.Net.HttpStatusCode.NotFound;
-                return NotFound(response);
-            }
+            var response = await _userService.ReserveBookAsync(userId, bookId);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [HttpPut("unreserve/{userId}/{bookId}")]
+        public async Task<IActionResult> UnreserveBook([FromRoute] int userId, [FromRoute] int bookId)
+        {
+            var response = await _userService.CancelReservationAsync(userId, bookId);
+            return StatusCode((int)response.StatusCode, response);
         }
 
         [HttpPut("return/{userId}/{bookId}")]
         public async Task<IActionResult> ReturnBook([FromRoute] int userId, [FromRoute] int bookId)
         {
-            APIResponse response = new APIResponse
-            {
-                IsSuccess = false,
-                StatusCode = System.Net.HttpStatusCode.BadRequest
-            };
-
-            var user = await _userRepo.GetByIdAsync(userId);
-            var book = await _bookRepo.GetByIdAsync(bookId);
-            if (user != null && book != null)
-            {
-                // Add book to user's reserved books
-                user.ReservedBooks.Add(book);
-
-                // Create a new history record for reserving
-                var userHistory = new UserHistory
-                {
-                    UserID = user.UserID,
-                    Action = BookStatusEnum.Returned,
-                    Timestamp = DateTime.UtcNow,
-                    Notes = $"Reserved: {book.Title}"
-                };
-
-                user.UserHistory.Add(userHistory); // Add history to user
-
-                // Save changes to the repository
-                await _userRepo.SaveAsync();
-                await _bookRepo.SaveAsync();
-
-                response.IsSuccess = true;
-                response.StatusCode = System.Net.HttpStatusCode.OK;
-                response.Result = user;
-                return Ok(response);
-            }
-            else
-            {
-                response.ErrorMessages.Add("User or Book not found.");
-                response.StatusCode = System.Net.HttpStatusCode.NotFound;
-                return NotFound(response);
-            }
+            var response = await _userService.ReturnBookAsync(userId, bookId);
+            return StatusCode((int)response.StatusCode, response);
         }
     }
-
 }

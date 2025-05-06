@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using FinalProjectLibrary.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace FinalProjectLibrary.Models.Books.BookDTOs
@@ -11,7 +12,7 @@ namespace FinalProjectLibrary.Models.Books.BookDTOs
         [Required]
         public string Author { get; set; }
         [Required]
-        public string Genre { get; set; }
+        public GenreEnums Genre { get; set; }
         public int PublicationYear { get; set; }
         public string BookDescription { get; set; }
 

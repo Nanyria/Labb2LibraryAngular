@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FinalProjectLibrary.Enums;
 using FinalProjectLibrary.Models.Books;
+using FinalProjectLibrary.Models.Users;
+using FinalProjectLibrary.Models;
 
 namespace FinalProjectLibrary.Data
 {
@@ -12,10 +14,33 @@ namespace FinalProjectLibrary.Data
         }
 
         public DbSet<Book> Books { get; set; }
-
+        public DbSet<User> Users { get; set; }
+        public DbSet<StatusHistoryItem> StatusHistoryItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        {   
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<StatusHistoryItem>()
+                .HasOne(sh => sh.book)
+                .WithMany(b => b.StatusHistory)
+                .HasForeignKey(sh => sh.BookID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StatusHistoryItem>()
+                .HasOne(sh => sh.user)
+                .WithMany(u => u.UserHistory)
+                .HasForeignKey(sh => sh.UserID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<User>()
+                .Ignore(u => u.BorrowedBooks) // Remove unused navigation property
+                .Ignore(u => u.ReservedBooks); // Remove unused navigation property
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.UserID)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn(seed: 1001, increment: 1);
+
 
             modelBuilder.Entity<Book>().HasData(
                 new Book
@@ -23,7 +48,7 @@ namespace FinalProjectLibrary.Data
                     BookID = 101,
                     Title = "The Great Gatsby",
                     Author = "F. Scott Fitzgerald",
-                    Genre = "Fiction",
+                    Genre = GenreEnums.Fiction,
                     PublicationYear = 1925,
                     BookDescription = "Lorem Ipsum"
                 },
@@ -32,7 +57,7 @@ namespace FinalProjectLibrary.Data
                     BookID = 102,
                     Title = "To Kill a Mockingbird",
                     Author = "Harper Lee",
-                    Genre = "Fiction",
+                    Genre = GenreEnums.Fiction,
                     PublicationYear = 1960,
                     BookDescription = "Lorem Ipsum"
                 },
@@ -41,7 +66,7 @@ namespace FinalProjectLibrary.Data
                     BookID = 103,
                     Title = "1984",
                     Author = "George Orwell",
-                    Genre = "Fiction",
+                    Genre = GenreEnums.Fiction,
                     PublicationYear = 1949,
                     BookDescription = "Lorem Ipsum"
                 }

@@ -1,6 +1,7 @@
 
 using FinalProjectLibrary.Data;
 using FinalProjectLibrary.Repositories;
+using FinalProjectLibrary.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinalProjectLibrary
@@ -17,7 +18,12 @@ namespace FinalProjectLibrary
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<BookService>();
+            builder.Services.AddScoped<IUserRepo, UserRepo>();
+            builder.Services.AddScoped<IBookRepo, BookRepo>();
             builder.Services.AddAutoMapper(typeof(MappingConfig));
+
 
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionToDB")));
 

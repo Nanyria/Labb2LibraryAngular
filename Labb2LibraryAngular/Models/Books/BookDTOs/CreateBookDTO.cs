@@ -1,18 +1,20 @@
-﻿using FinalProjectLibrary.Models.Books;
+﻿using FinalProjectLibrary.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinalProjectLibrary.Models.Books.BookDTOs
 {
-    public class CreateBookDTO
+    public class CreateBookDto
     {
         [Required]
         public string Title { get; set; }
         [Required]
         public string Author { get; set; }
         [Required]
-        public string Genre { get; set; }
-        public int PublicationYear { get; set; }
+        public GenreEnums Genre { get; set; }
         public string BookDescription { get; set; }
+        public int PublicationYear { get; set; }
+        
         public List<StatusHistoryItem> StatusHistory { get; set; } = new();
+        public BookStatusEnum BookStatus { get; set; } = BookStatusEnum.Available;
     }
 }

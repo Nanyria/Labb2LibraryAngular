@@ -1,5 +1,6 @@
 ﻿using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Enums;
+using FinalProjectLibrary.Models;
 
 namespace FinalProjectLibrary.Data
 {
@@ -12,7 +13,7 @@ namespace FinalProjectLibrary.Data
                 BookID = 101,
                 Title = "The Great Gatsby",
                 Author = "F. Scott Fitzgerald",
-                Genre = "Fiction",
+                Genre = GenreEnums.Fiction,
                 PublicationYear = 1925,
                 BookDescription = "Lorem Ipsum"
             },
@@ -21,7 +22,7 @@ namespace FinalProjectLibrary.Data
                 BookID = 102,
                 Title = "To Kill a Mockingbird",
                 Author = "Harper Lee",
-                Genre = "Fiction",
+                Genre = GenreEnums.Fiction,
                 PublicationYear = 1960,
                 BookDescription = "Lorem Ipsum"
             },
@@ -30,7 +31,7 @@ namespace FinalProjectLibrary.Data
                 BookID = 103,
                 Title = "1984",
                 Author = "George Orwell",
-                Genre = "Fiction",
+                Genre = GenreEnums.Fiction,
                 PublicationYear = 1949,
                 BookDescription = "Lorem Ipsum"
             }

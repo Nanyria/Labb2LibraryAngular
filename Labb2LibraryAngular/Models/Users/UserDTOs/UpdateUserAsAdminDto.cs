@@ -1,31 +1,18 @@
 ﻿using FinalProjectLibrary.Models.Books;
 using System.ComponentModel.DataAnnotations;
 
-namespace FinalProjectLibrary.Models.Users
+namespace FinalProjectLibrary.Models.Users.UserDTOs
 {
-    public class User
+    public class UpdateUserAsAdminDto
     {
-        [Key]
-        public int UserID { get; set; }
-        [Required]
-        [MaxLength(100)]
         public string UserName { get; set; }
-        [Required]
-        [MaxLength(100)]
         public string FirstName { get; set; }
-        [Required]
-        [MaxLength(100)]
         public string LastName { get; set; }
-        [Required]
-        [MaxLength(100)]
         public string Email { get; set; }
-        [Required]
-        [MaxLength(100)]
         public string Password { get; set; }
 
         public List<Book> BorrowedBooks { get; set; } = new List<Book>();
         public List<Book> ReservedBooks { get; set; } = new List<Book>();
-        public List<StatusHistoryItem> UserHistory { get; set; } = new List<StatusHistoryItem>();
-
+        public List<UserHistory> UserHistory { get; set; } = new List<UserHistory>();
     }
 }

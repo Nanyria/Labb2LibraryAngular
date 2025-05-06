@@ -4,13 +4,17 @@ namespace FinalProjectLibrary.Repositories
 {
     public interface IUserRepo
     {
-        Task<IEnumerable<User>> GetAllAsync();
-        Task<User> GetByIdAsync(int id);
-        Task<User> GetByEmailAsync(string email);
-        Task<User> GetByUserNameAsync(string userName);
-        Task<User> Delete(User user);
-        Task<User> Update(User user);
-        Task<User> Create(User user);
-        Task SaveAsync();
+        
+        Task CreateUserAsync(User user);        
+        Task DeleteUser(User user);
+        Task UpdateUser(User user);
+
+        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<User> GetUserByIdAsync(int id);
+        Task<User> GetUserByEmailAsync(string email);
+        Task<User> GetUserByUserNameAsync(string userName);
+
+
+        Task SaveUserAsync();
     }
 }
