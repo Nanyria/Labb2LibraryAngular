@@ -54,7 +54,7 @@ namespace FinalProjectLibrary.Controllers
         [HttpPut("borrow/{userId}/{bookId}")]
         public async Task<IActionResult> BorrowBook([FromRoute] int userId, [FromRoute] int bookId)
         {
-            var response = await _userService.BorrowBookAsync(userId, bookId);
+            var response = await _userService.CheckOutBookAsync(userId, bookId);
             return StatusCode((int)response.StatusCode, response);
         }
 

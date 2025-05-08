@@ -2,6 +2,8 @@
 using FinalProjectLibrary.Models;
 using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Books.BookDTOs;
+using FinalProjectLibrary.Models.History;
+using FinalProjectLibrary.Models.History.HistoryDTOs;
 using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Models.Users.UserDTOs;
 
@@ -17,7 +19,7 @@ namespace FinalProjectLibrary
 
 
             // Update for BookStatus - Map StatusHistoryItem from DTO
-            CreateMap<UpdateBookStatusDTO, Book>()
+            CreateMap<BookDto, Book>()
                 .ForMember(dest => dest.StatusHistory, opt => opt.MapFrom(src =>
                     new List<StatusHistoryItem>
                     {
@@ -35,11 +37,10 @@ namespace FinalProjectLibrary
                 .ForMember(dest => dest.BookDescription, opt => opt.Ignore())
                 .ReverseMap();
 
-            CreateMap<Book, UpdateBookInfoDTO>().ReverseMap();
 
             CreateMap<User, UserDto>()
                 .ReverseMap()
-                .ForMember(dest => dest.BorrowedBooks, opt => opt.Ignore())
+                .ForMember(dest => dest.CheckedOutBooks, opt => opt.Ignore())
                 .ForMember(dest => dest.ReservedBooks, opt => opt.Ignore())
                 .ForMember(dest => dest.UserHistory, opt => opt.Ignore());
 
@@ -51,6 +52,8 @@ namespace FinalProjectLibrary
             // Map between User and UpdateUserDto
             CreateMap<User, UpdateUserDto>().ReverseMap();
             CreateMap<StatusHistoryItem, StatusHistoryItemDto>().ReverseMap();
+            CreateMap<ReservationItem, ReservationItemDto>().ReverseMap();
+            CreateMap<CheckedOutItem, CheckedOutItemDto>().ReverseMap();
         }
     }
 }

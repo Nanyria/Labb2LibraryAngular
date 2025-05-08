@@ -56,7 +56,7 @@ namespace FinalProjectLibrary.Repositories
 
         public async Task SaveAsync()
         {
-            await _db.SaveChangesAsync(); //Vi använde inte await här, why not?
+            await _db.SaveChangesAsync(); 
         }
 
         public async Task UpdateAsync(Book book)

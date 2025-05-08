@@ -1,6 +1,6 @@
 ﻿using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Enums;
-using FinalProjectLibrary.Models;
+using FinalProjectLibrary.Models.History;
 
 namespace FinalProjectLibrary.Data
 {
@@ -15,7 +15,8 @@ namespace FinalProjectLibrary.Data
                 Author = "F. Scott Fitzgerald",
                 Genre = GenreEnums.Fiction,
                 PublicationYear = 1925,
-                BookDescription = "Lorem Ipsum"
+                BookDescription = "Lorem Ipsum",
+                BookStatus = BookStatusEnum.Available,
             },
             new Book
             {
@@ -24,7 +25,8 @@ namespace FinalProjectLibrary.Data
                 Author = "Harper Lee",
                 Genre = GenreEnums.Fiction,
                 PublicationYear = 1960,
-                BookDescription = "Lorem Ipsum"
+                BookDescription = "Lorem Ipsum",
+                BookStatus = BookStatusEnum.Available,
             },
             new Book
             {
@@ -33,7 +35,8 @@ namespace FinalProjectLibrary.Data
                 Author = "George Orwell",
                 Genre = GenreEnums.Fiction,
                 PublicationYear = 1949,
-                BookDescription = "Lorem Ipsum"
+                BookDescription = "Lorem Ipsum",
+                BookStatus = BookStatusEnum.Available,
             }
         };
 
@@ -51,7 +54,7 @@ namespace FinalProjectLibrary.Data
             {
                 StatusHistoryItemID = 2,
                 BookID = 102,
-                BookStatus = BookStatusEnum.Borrowed,
+                BookStatus = BookStatusEnum.CheckedOut,
                 Timestamp = DateTime.UtcNow.AddDays(-2),
                 Notes = "Initial status"
             },

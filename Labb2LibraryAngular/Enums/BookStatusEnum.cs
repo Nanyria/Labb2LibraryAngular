@@ -4,7 +4,7 @@
     {
         Available,
         Reserved,
-        Borrowed,
+        CheckedOut,
         Returned,
         Overdue
     }

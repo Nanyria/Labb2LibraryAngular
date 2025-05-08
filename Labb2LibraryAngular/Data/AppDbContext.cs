@@ -2,7 +2,7 @@
 using FinalProjectLibrary.Enums;
 using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Users;
-using FinalProjectLibrary.Models;
+using FinalProjectLibrary.Models.History;
 
 namespace FinalProjectLibrary.Data
 {
@@ -16,6 +16,8 @@ namespace FinalProjectLibrary.Data
         public DbSet<Book> Books { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<StatusHistoryItem> StatusHistoryItems { get; set; }
+        public DbSet<CheckedOutItem> CheckOutItems { get; set; }
+        public DbSet<ReservationItem> ReservationItems { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {   
             base.OnModelCreating(modelBuilder);
@@ -33,7 +35,7 @@ namespace FinalProjectLibrary.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<User>()
-                .Ignore(u => u.BorrowedBooks) // Remove unused navigation property
+                .Ignore(u => u.CheckedOutBooks) // Remove unused navigation property
                 .Ignore(u => u.ReservedBooks); // Remove unused navigation property
 
             modelBuilder.Entity<User>()
@@ -50,7 +52,8 @@ namespace FinalProjectLibrary.Data
                     Author = "F. Scott Fitzgerald",
                     Genre = GenreEnums.Fiction,
                     PublicationYear = 1925,
-                    BookDescription = "Lorem Ipsum"
+                    BookDescription = "Lorem Ipsum",
+                    BookStatus = BookStatusEnum.Available,
                 },
                 new Book
                 {
@@ -59,7 +62,8 @@ namespace FinalProjectLibrary.Data
                     Author = "Harper Lee",
                     Genre = GenreEnums.Fiction,
                     PublicationYear = 1960,
-                    BookDescription = "Lorem Ipsum"
+                    BookDescription = "Lorem Ipsum",
+                    BookStatus = BookStatusEnum.Available,
                 },
                 new Book
                 {
@@ -68,7 +72,8 @@ namespace FinalProjectLibrary.Data
                     Author = "George Orwell",
                     Genre = GenreEnums.Fiction,
                     PublicationYear = 1949,
-                    BookDescription = "Lorem Ipsum"
+                    BookDescription = "Lorem Ipsum",
+                    BookStatus = BookStatusEnum.Available,
                 }
             );
 
@@ -85,7 +90,7 @@ namespace FinalProjectLibrary.Data
                 {
                     StatusHistoryItemID = 2,
                     BookID = 102,
-                    BookStatus = BookStatusEnum.Borrowed,  // Example status
+                    BookStatus = BookStatusEnum.CheckedOut,  // Example status
                     Timestamp = DateTime.UtcNow.AddDays(-2),
                     Notes = "Initial status"
                 },

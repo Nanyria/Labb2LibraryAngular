@@ -1,4 +1,5 @@
 ﻿using FinalProjectLibrary.Models.Books;
+using FinalProjectLibrary.Models.History;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinalProjectLibrary.Models.Users
@@ -9,22 +10,22 @@ namespace FinalProjectLibrary.Models.Users
         public int UserID { get; set; }
         [Required]
         [MaxLength(100)]
-        public string UserName { get; set; }
+        public required string UserName { get; set; }
         [Required]
         [MaxLength(100)]
-        public string FirstName { get; set; }
+        public required string FirstName { get; set; }
         [Required]
         [MaxLength(100)]
-        public string LastName { get; set; }
+        public required string LastName { get; set; }
         [Required]
         [MaxLength(100)]
-        public string Email { get; set; }
+        public required string Email { get; set; }
         [Required]
         [MaxLength(100)]
-        public string Password { get; set; }
+        public required string Password { get; set; }
 
-        public List<Book> BorrowedBooks { get; set; } = new List<Book>();
-        public List<Book> ReservedBooks { get; set; } = new List<Book>();
+        public List<CheckedOutItem> CheckedOutBooks { get; set; } = new List<CheckedOutItem>();
+        public List<ReservationItem> ReservedBooks { get; set; } = new List<ReservationItem>();
         public List<StatusHistoryItem> UserHistory { get; set; } = new List<StatusHistoryItem>();
 
     }

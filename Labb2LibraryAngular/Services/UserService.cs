@@ -4,24 +4,43 @@ using FinalProjectLibrary.Enums;
 using FinalProjectLibrary.Models;
 using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Books.BookDTOs;
+using FinalProjectLibrary.Models.History;
+using FinalProjectLibrary.Models.History.HistoryDTOs;
 using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Models.Users.UserDTOs;
 using FinalProjectLibrary.Repositories;
+using System.Linq;
 using System.Net;
 
 namespace FinalProjectLibrary.Services
 {
-    public class UserService
+    public interface IUserService
+    {
+        Task<APIResponse<CreateUserDto>> AddUserAsync(CreateUserDto createUserDTO);
+        Task<APIResponse<UserDto>> DeleteUserAsync(int userId);
+        Task<APIResponse<UpdateUserAsAdminDto>> UpdateUserAsAdminAsync(int userId, UpdateUserAsAdminDto userToUpdate);
+        Task<APIResponse<UpdateUserDto>> UpdateUserAsync(int userId, UpdateUserDto userToUpdate);
+        Task<APIResponse<UserDto>> GetUserByIdAsync(int userId);
+        Task<APIResponse<List<UserDto>>> GetAllUsersAsync();
+        Task<APIResponse<UserDto>> ReserveBookAsync(int userId, int bookId);
+        Task<APIResponse<UserDto>> CancelReservationAsync(int userId, int bookId);
+        Task<APIResponse<UserDto>> CheckOutBookAsync(int userId, int bookId);
+        Task<APIResponse<UserDto>> ReturnBookAsync(int userId, int bookId);
+    }
+    
+    public class UserService : IUserService
     {
         private readonly IUserRepo _userRepo;
         private readonly IBookRepo _bookRepo;
         private readonly IMapper _mapper;
+        private readonly IBookService _bookService;
 
-        public UserService(IUserRepo userRepo, IBookRepo bookRepo, IMapper mapper)
+        public UserService(IUserRepo userRepo, IBookRepo bookRepo, IMapper mapper, IBookService bookService)
         {
             _userRepo = userRepo;
             _bookRepo = bookRepo;
             _mapper = mapper;
+            _bookService = bookService;
         }
 
         public async Task<APIResponse<CreateUserDto>> AddUserAsync(CreateUserDto createUserDTO)
@@ -179,45 +198,42 @@ namespace FinalProjectLibrary.Services
 
             var user = await _userRepo.GetUserByIdAsync(userId);
             var book = await _bookRepo.GetByIdAsync(bookId);
-            if (user != null && book != null)
-            {
+            var userDto = _mapper.Map<UserDto>(user);
+            var bookDto = _mapper.Map<BookDto>(book);
 
-                if (user.ReservedBooks.Contains(book))
+            if (userDto != null && book != null)
+            {
+                if (userDto.ReservedBooks.Any(r => r.BookID == book.BookID))
                 {
                     response.ErrorMessages.Add("Book already reserved by user.");
                     response.StatusCode = HttpStatusCode.Conflict;
                     return response;
                 }
-                else if (user.BorrowedBooks.Contains(book))
+                else if (userDto.CheckedOutBooks.Any(b => b.BookId == book.BookID))
                 {
-                    response.ErrorMessages.Add("Book already borrowed by user.");
+                    response.ErrorMessages.Add("Book already checked out by user.");
                     response.StatusCode = HttpStatusCode.Conflict;
                     return response;
-                }
+                };
 
-                else
+                var reservation = new ReservationItemDto
                 {
+                    BookID = book.BookID,
+                    UserID = user.UserID,
+                    ReservationDate = DateTime.UtcNow
+                };
 
-                    var userHistory = new StatusHistoryItem
-                    {
-                        UserID = user.UserID,
-                        BookStatus = BookStatusEnum.Reserved,
-                        Timestamp = DateTime.UtcNow,
-                        Notes = $"Reserved: {book.Title}"
-                    };
+                // Add the reservation to the user and book and update the book's status which also creates a StatusHistoryItem
+                userDto.ReservedBooks.Add(reservation);
+                bookDto.Reservations.Add(reservation);
+                await _bookService.UpdateBookStatusAsync(bookDto.BookID, userDto.UserID, BookStatusEnum.Reserved, $"Book reserved by {userDto.UserName}"); // Update the book status to Reserved
 
-                    user.UserHistory.Add(userHistory);
-                    user.ReservedBooks.Add(book);
-                    book.StatusHistory.Add(userHistory);
-                    book.BookStatus = BookStatusEnum.Reserved;
+                await _userRepo.SaveUserAsync();
+                await _bookRepo.SaveAsync();
 
-                    await _userRepo.SaveUserAsync();
-                    await _bookRepo.SaveAsync();
-                    var userDto = _mapper.Map<UserDto>(user);
-                    response.IsSuccess = true;
-                    response.StatusCode = HttpStatusCode.OK;
-                    response.Result = userDto;
-                }
+                response.IsSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = userDto;
             }
             else
             {
@@ -227,6 +243,23 @@ namespace FinalProjectLibrary.Services
 
             return response;
         }
+
+        public bool RemoveReservation(UserDto user, BookDto book)
+        {
+            // Find the reservation item for the given book
+            var reservationItem = user.ReservedBooks.FirstOrDefault(r => r.BookID == book.BookID);
+            if (reservationItem != null)
+            {
+                // Remove the reservation from both the user and the book
+                user.ReservedBooks.Remove(reservationItem);
+                book.Reservations.Remove(reservationItem);
+
+                return true; 
+            }
+
+            return false; 
+        }
+
         public async Task<APIResponse<UserDto>> CancelReservationAsync(int userId, int bookId)
         {
             var response = new APIResponse<UserDto>
@@ -234,26 +267,25 @@ namespace FinalProjectLibrary.Services
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
-            var user = await _userRepo.GetUserByIdAsync(userId);
-            var book = await _bookRepo.GetByIdAsync(bookId);
-            if (user != null && book != null)
+
+            var bookDtoResponse = await _bookService.GetBookDtoByIdAsync(bookId);
+            var userDtoResponse = await GetUserByIdAsync(userId);
+            var bookDto = bookDtoResponse.Result;
+            var userDto = userDtoResponse.Result;
+
+
+            if (userDto != null && bookDto != null)
             {
-                if (user.ReservedBooks.Contains(book))
+                // Use the refactored RemoveReservation method
+                if (RemoveReservation(userDto, bookDto))
                 {
-                    user.ReservedBooks.Remove(book);
-                    var userHistory = new StatusHistoryItem
-                    {
-                        UserID = user.UserID,
-                        BookStatus = BookStatusEnum.Available,
-                        Timestamp = DateTime.UtcNow,
-                        Notes = $"Reservation cancelled: {book.Title}"
-                    };
-                    user.UserHistory.Add(userHistory);
-                    book.StatusHistory.Add(userHistory);
-                    book.BookStatus = BookStatusEnum.Available;
+                    await _bookService.UpdateBookStatusAsync(bookDto.BookID, userDto.UserID, BookStatusEnum.Available, $"Reservation cancelled by {userDto.UserName}");
+
+                    var user = _mapper.Map<User>(userDto);
                     await _userRepo.SaveUserAsync();
                     await _bookRepo.SaveAsync();
-                    var userDto = _mapper.Map<UserDto>(user);
+
+
                     response.IsSuccess = true;
                     response.StatusCode = HttpStatusCode.OK;
                     response.Result = userDto;
@@ -269,46 +301,11 @@ namespace FinalProjectLibrary.Services
                 response.ErrorMessages.Add("User or Book not found.");
                 response.StatusCode = HttpStatusCode.NotFound;
             }
+
             return response;
         }
-        //public async Task<APIResponse> CheckStatus(int userId, int bookId)
-        //{
-        //    var response = new APIResponse
-        //    {
-        //        IsSuccess = false,
-        //        StatusCode = HttpStatusCode.BadRequest
-        //    };
-        //    var user = await _userRepo.GetUserByIdAsync(userId);
-        //    var book = await _bookRepo.GetByIdAsync(bookId);
-        //    if (user != null && book != null)
-        //    {
-        //        if (user.BorrowedBooks.Contains(book))
-        //        {
-        //            response.IsSuccess = true;
-        //            response.StatusCode = HttpStatusCode.OK;
-        //            response.Result = "Book is borrowed by user.";
-        //        }
-        //        else if (user.ReservedBooks.Contains(book))
-        //        {
-        //            response.IsSuccess = true;
-        //            response.StatusCode = HttpStatusCode.OK;
-        //            response.Result = "Book is reserved by user.";
-        //        }
-        //        else
-        //        {
-        //            response.IsSuccess = true;
-        //            response.StatusCode = HttpStatusCode.OK;
-        //            response.Result = "Book is available.";
-        //        }
-        //    }
-        //    else
-        //    {
-        //        response.ErrorMessages.Add("User or Book not found.");
-        //        response.StatusCode = HttpStatusCode.NotFound;
-        //    }
-        //    return response;
-        //}
-        public async Task<APIResponse<UserDto>> BorrowBookAsync(int userId, int bookId)
+
+        public async Task<APIResponse<UserDto>> CheckOutBookAsync(int userId, int bookId)
         {
             var response = new APIResponse<UserDto>
             {
@@ -316,32 +313,31 @@ namespace FinalProjectLibrary.Services
                 StatusCode = HttpStatusCode.BadRequest
             };
 
-            // Retrieve user and book from repositories
-            var user = await _userRepo.GetUserByIdAsync(userId);
-            var book = await _bookRepo.GetByIdAsync(bookId);
 
-            if (user != null && book != null)
+            var bookDtoResponse = await _bookService.GetBookDtoByIdAsync(bookId);
+            var userDtoResponse = await GetUserByIdAsync(userId);
+            var bookDto = bookDtoResponse.Result;
+            var userDto = userDtoResponse.Result;
+
+            if (userDto != null && bookDto != null)
             {
                 // Check if the book is reserved by the user
-                if (user.ReservedBooks.Contains(book))
+                if (RemoveReservation(userDto, bookDto) || bookDto.BookStatus == BookStatusEnum.Available)
                 {
-                    user.ReservedBooks.Remove(book);
-                    await SetBorrowedBookAsync(user, book);
+                   SetCheckedOutBookAsync(userDto, bookDto);
+                   await _bookService.UpdateBookStatusAsync(bookDto.BookID, userDto.UserID, BookStatusEnum.CheckedOut, $"Checked out by {userDto.UserName}");
                 }
-                // Check if the book is available
-                else if (book.BookStatus == BookStatusEnum.Available)
-                {
-                    await SetBorrowedBookAsync(user, book);
-                }
+
                 else
                 {
-                    response.ErrorMessages.Add("Book is not available for borrowing.");
+                    response.ErrorMessages.Add("Book is not available to check out.");
                     response.StatusCode = HttpStatusCode.Conflict;
                     return response;
                 }
 
-                var userDto = _mapper.Map<UserDto>(user);
-
+                var user = _mapper.Map<User>(userDto);
+                await _userRepo.UpdateUser(user);
+                await _userRepo.SaveUserAsync();
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.OK;
                 response.Result = userDto;
@@ -354,26 +350,16 @@ namespace FinalProjectLibrary.Services
 
             return response;
         }
-        public async Task SetBorrowedBookAsync(User user, Book book)
+        public void SetCheckedOutBookAsync(UserDto user, BookDto book)
         {
-            user.BorrowedBooks.Add(book);
-
-            var userHistory = new StatusHistoryItem
+            var checkedOutItem = new CheckedOutItemDto
             {
-                UserID = user.UserID,
-                BookID = book.BookID,
-                BookStatus = BookStatusEnum.Borrowed,
-                Timestamp = DateTime.UtcNow,
-                Notes = $"Borrowed: {book.Title}"
+                BookId = book.BookID,
+                UserId = user.UserID,
+                CheckOutDate = DateTime.UtcNow,
+                ReturnDate = DateTime.UtcNow.AddMonths(1),
             };
-
-            user.UserHistory.Add(userHistory);
-            book.StatusHistory.Add(userHistory);
-
-            book.BookStatus = BookStatusEnum.Borrowed;
-
-            await _userRepo.SaveUserAsync();
-            await _bookRepo.SaveAsync();
+            user.CheckedOutBooks.Add(checkedOutItem);
         }
 
         public async Task<APIResponse<UserDto>> ReturnBookAsync(int userId, int bookId)
@@ -384,31 +370,22 @@ namespace FinalProjectLibrary.Services
                 StatusCode = HttpStatusCode.BadRequest
             };
 
-            var user = await _userRepo.GetUserByIdAsync(userId);
-            var book = await _bookRepo.GetByIdAsync(bookId);
-            if (user != null && book != null)
+            var bookDtoResponse = await _bookService.GetBookDtoByIdAsync(bookId);
+            var userDtoResponse = await GetUserByIdAsync(userId);
+            var bookDto = bookDtoResponse.Result;
+            var userDto = userDtoResponse.Result;
+            if (userDto != null && bookDto != null)
             {
-                if (user.BorrowedBooks.Contains(book))
+                if (userDto.CheckedOutBooks.Any(c => c.BookId == bookDto.BookID))
                 {
-                    user.BorrowedBooks.Remove(book);
+                    RemoveFromCheckedOutList(userDto, bookDto);
                 }
-
-                var userHistory = new StatusHistoryItem
-                {
-                    UserID = user.UserID,
-                    BookStatus = BookStatusEnum.Available,
-                    Timestamp = DateTime.UtcNow,
-                    Notes = $"Returned: {book.Title}"
-                };
-
-                user.UserHistory.Add(userHistory);
-                book.StatusHistory.Add(userHistory);
-                book.BookStatus = BookStatusEnum.Available;
+                await _bookService.UpdateBookStatusAsync(bookDto.BookID, userDto.UserID, BookStatusEnum.Returned, $"Returned by {userDto.UserName}");
 
                 await _userRepo.SaveUserAsync();
                 await _bookRepo.SaveAsync();
 
-                var userDto = _mapper.Map<UserDto>(user);
+                var user = _mapper.Map<User>(userDto);
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.OK;
                 response.Result = userDto;
@@ -420,6 +397,21 @@ namespace FinalProjectLibrary.Services
             }
 
             return response;
+        }
+        public bool RemoveFromCheckedOutList(UserDto user, BookDto book)
+        {
+            // Find the reservation item for the given book
+            var checkedOutItem = user.CheckedOutBooks.FirstOrDefault(r => r.BookId == book.BookID);
+            if (checkedOutItem != null)
+            {
+                // Remove the reservation from both the user and the book
+                user.CheckedOutBooks.Remove(checkedOutItem);
+                book.CheckedOutBy = null;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }
