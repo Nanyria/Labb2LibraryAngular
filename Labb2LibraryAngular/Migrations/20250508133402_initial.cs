@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FinalProjectLibrary.Migrations
 {
     /// <inheritdoc />
-    public partial class intial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,7 @@ namespace FinalProjectLibrary.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Author = table.Column<string>(type: "nvarchar(75)", maxLength: 75, nullable: false),
-                    Genre = table.Column<int>(type: "int", maxLength: 25, nullable: false),
+                    Genre = table.Column<int>(type: "int", nullable: false),
                     PublicationYear = table.Column<int>(type: "int", nullable: false),
                     BookDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BookStatus = table.Column<int>(type: "int", nullable: false)
@@ -49,6 +49,64 @@ namespace FinalProjectLibrary.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CheckOutItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    BookId = table.Column<int>(type: "int", nullable: false),
+                    CheckOutDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReminderEmailSent = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CheckOutItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CheckOutItems_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "BookID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_CheckOutItems_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReservationItems",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    BookID = table.Column<int>(type: "int", nullable: false),
+                    ReservationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AvailabilityDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BookIsAvaliableEmailSent = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReservationItems", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_ReservationItems_Books_BookID",
+                        column: x => x.BookID,
+                        principalTable: "Books",
+                        principalColumn: "BookID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ReservationItems_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StatusHistoryItems",
                 columns: table => new
                 {
@@ -57,7 +115,7 @@ namespace FinalProjectLibrary.Migrations
                     BookID = table.Column<int>(type: "int", nullable: false),
                     UserID = table.Column<int>(type: "int", nullable: true),
                     BookStatus = table.Column<int>(type: "int", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -92,10 +150,31 @@ namespace FinalProjectLibrary.Migrations
                 columns: new[] { "StatusHistoryItemID", "BookID", "BookStatus", "Notes", "Timestamp", "UserID" },
                 values: new object[,]
                 {
-                    { 1, 101, 0, "Initial status", new DateTime(2025, 5, 5, 17, 36, 8, 938, DateTimeKind.Utc).AddTicks(7385), null },
-                    { 2, 102, 2, "Initial status", new DateTime(2025, 5, 4, 17, 36, 8, 938, DateTimeKind.Utc).AddTicks(7389), null },
-                    { 3, 103, 1, "Initial status", new DateTime(2025, 5, 3, 17, 36, 8, 938, DateTimeKind.Utc).AddTicks(7390), null }
+                    { 1, 101, 0, "Initial status", new DateTime(2025, 5, 7, 13, 34, 1, 762, DateTimeKind.Utc).AddTicks(1654), null },
+                    { 2, 102, 2, "Initial status", new DateTime(2025, 5, 6, 13, 34, 1, 762, DateTimeKind.Utc).AddTicks(1659), null },
+                    { 3, 103, 1, "Initial status", new DateTime(2025, 5, 5, 13, 34, 1, 762, DateTimeKind.Utc).AddTicks(1661), null }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckOutItems_BookId",
+                table: "CheckOutItems",
+                column: "BookId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckOutItems_UserId",
+                table: "CheckOutItems",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReservationItems_BookID",
+                table: "ReservationItems",
+                column: "BookID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReservationItems_UserID",
+                table: "ReservationItems",
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StatusHistoryItems_BookID",
@@ -111,6 +190,12 @@ namespace FinalProjectLibrary.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "CheckOutItems");
+
+            migrationBuilder.DropTable(
+                name: "ReservationItems");
+
             migrationBuilder.DropTable(
                 name: "StatusHistoryItems");
 

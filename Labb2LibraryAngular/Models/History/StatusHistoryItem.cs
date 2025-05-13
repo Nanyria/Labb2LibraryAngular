@@ -13,10 +13,10 @@ namespace FinalProjectLibrary.Models.History
         [ForeignKey("Book")]
         public int BookID { get; set; }
         [Required]
-        public Book book { get; set; }
+        public Book Book { get; set; }
         [ForeignKey("User")]
         public int? UserID { get; set; }
-        public User? user { get; set; }
+        public User? User { get; set; }
         [Required]
 
         public BookStatusEnum BookStatus { get; set; }

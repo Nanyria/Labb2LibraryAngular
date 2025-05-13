@@ -1,4 +1,6 @@
 ﻿using FinalProjectLibrary.Models.Users;
+using System.Linq.Expressions;
+using System.Xml.Linq;
 
 namespace FinalProjectLibrary.Repositories
 {
@@ -16,5 +18,6 @@ namespace FinalProjectLibrary.Repositories
 
 
         Task SaveUserAsync();
+        IQueryable<User> FindByCondition(Expression<Func<User, bool>> expression);
     }
 }

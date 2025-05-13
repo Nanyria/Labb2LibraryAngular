@@ -1,8 +1,7 @@
 ﻿using FinalProjectLibrary.Enums;
-using FinalProjectLibrary.Models.Books;
-using FinalProjectLibrary.Models.Users;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+using FinalProjectLibrary.Models.Books.BookDTOs;
+using FinalProjectLibrary.Models.Users.UserDTOs;
+
 
 namespace FinalProjectLibrary.Models.History.HistoryDTOs
 {
@@ -12,7 +11,6 @@ namespace FinalProjectLibrary.Models.History.HistoryDTOs
         public BookStatusEnum BookStatus { get; set; }
         public DateTime? Timestamp { get; set; } = DateTime.UtcNow;
         public int? UserID { get; set; } 
-
         public int? BookID { get; set; }
         public string? Notes { get; set; }
     }

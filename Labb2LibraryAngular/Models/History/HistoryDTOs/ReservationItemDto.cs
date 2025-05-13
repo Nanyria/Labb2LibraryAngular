@@ -1,5 +1,5 @@
-﻿using FinalProjectLibrary.Models.Books;
-using FinalProjectLibrary.Models.Users;
+﻿using FinalProjectLibrary.Models.Books.BookDTOs;
+using FinalProjectLibrary.Models.Users.UserDTOs;
 
 namespace FinalProjectLibrary.Models
 {
@@ -8,8 +8,9 @@ namespace FinalProjectLibrary.Models
 
         public int ID { get; set; }
         public int UserID { get; set; }
+        public string UserName { get; set; }
         public int BookID { get; set; }
-        public Book Book { get; set; }
+        public string BookTitle { get; set; }
         public DateTime ReservationDate { get; set; }
         public DateTime? AvailabilityDate { get; set; }
         public DateTime? BookIsAvaliableEmailSent { get; set; }

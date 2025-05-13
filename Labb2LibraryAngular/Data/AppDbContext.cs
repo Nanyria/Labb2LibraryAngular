@@ -22,24 +22,67 @@ namespace FinalProjectLibrary.Data
         {   
             base.OnModelCreating(modelBuilder);
 
+            // ReservationItem relationships
+            modelBuilder.Entity<ReservationItem>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.ReservedBooks)
+                .HasForeignKey(r => r.UserID)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+
+            modelBuilder.Entity<ReservationItem>()
+                .HasOne(r => r.Book)
+                .WithMany(b => b.Reservations)
+                .HasForeignKey(r => r.BookID)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+
+            // CheckedOutItem relationships
+            modelBuilder.Entity<CheckedOutItem>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.CheckedOutBooks)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+
+            modelBuilder.Entity<CheckedOutItem>()
+                .HasOne(c => c.Book)
+                .WithOne(b => b.CheckedOutBy)
+                .HasForeignKey<CheckedOutItem>(c => c.BookId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+
+            // StatusHistoryItem relationships
             modelBuilder.Entity<StatusHistoryItem>()
-                .HasOne(sh => sh.book)
+                .HasOne(sh => sh.Book)
                 .WithMany(b => b.StatusHistory)
                 .HasForeignKey(sh => sh.BookID)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<StatusHistoryItem>()
-                .HasOne(sh => sh.user)
+                .HasOne(sh => sh.User)
                 .WithMany(u => u.UserHistory)
                 .HasForeignKey(sh => sh.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<User>()
-                .Ignore(u => u.CheckedOutBooks) // Remove unused navigation property
-                .Ignore(u => u.ReservedBooks); // Remove unused navigation property
-
-            modelBuilder.Entity<User>()
                 .Property(u => u.UserID)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn(seed: 1001, increment: 1);
+
+            modelBuilder.Entity<Book>()
+                .Property(b => b.BookID)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn(seed: 1001, increment: 1);
+
+            modelBuilder.Entity<CheckedOutItem>()
+                .Property(c => c.Id)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn(seed: 1001, increment: 1);
+
+            modelBuilder.Entity<ReservationItem>()
+                .Property(r => r.ID)
+                .ValueGeneratedOnAdd()
+                .UseIdentityColumn(seed: 1001, increment: 1);
+
+            modelBuilder.Entity<StatusHistoryItem>()
+                .Property(sh => sh.StatusHistoryItemID)
                 .ValueGeneratedOnAdd()
                 .UseIdentityColumn(seed: 1001, increment: 1);
 
@@ -47,7 +90,7 @@ namespace FinalProjectLibrary.Data
             modelBuilder.Entity<Book>().HasData(
                 new Book
                 {
-                    BookID = 101,
+                    BookID = 1001,
                     Title = "The Great Gatsby",
                     Author = "F. Scott Fitzgerald",
                     Genre = GenreEnums.Fiction,
@@ -57,7 +100,7 @@ namespace FinalProjectLibrary.Data
                 },
                 new Book
                 {
-                    BookID = 102,
+                    BookID = 1002,
                     Title = "To Kill a Mockingbird",
                     Author = "Harper Lee",
                     Genre = GenreEnums.Fiction,
@@ -67,7 +110,7 @@ namespace FinalProjectLibrary.Data
                 },
                 new Book
                 {
-                    BookID = 103,
+                    BookID = 1003,
                     Title = "1984",
                     Author = "George Orwell",
                     Genre = GenreEnums.Fiction,
@@ -80,24 +123,24 @@ namespace FinalProjectLibrary.Data
             modelBuilder.Entity<StatusHistoryItem>().HasData(
                 new StatusHistoryItem
                 {
-                    StatusHistoryItemID = 1,
-                    BookID = 101,
+                    StatusHistoryItemID = 1001,
+                    BookID = 1001,
                     BookStatus = BookStatusEnum.Available,  // Use an example status from BookStatusEnum
                     Timestamp = DateTime.UtcNow.AddDays(-1),
                     Notes = "Initial status"
                 },
                 new StatusHistoryItem
                 {
-                    StatusHistoryItemID = 2,
-                    BookID = 102,
+                    StatusHistoryItemID = 1002,
+                    BookID = 1002,
                     BookStatus = BookStatusEnum.CheckedOut,  // Example status
                     Timestamp = DateTime.UtcNow.AddDays(-2),
                     Notes = "Initial status"
                 },
                 new StatusHistoryItem
                 {
-                    StatusHistoryItemID = 3,
-                    BookID = 103,
+                    StatusHistoryItemID = 1003,
+                    BookID = 1003,
                     BookStatus = BookStatusEnum.Reserved,  // Example status
                     Timestamp = DateTime.UtcNow.AddDays(-3),
                     Notes = "Initial status"

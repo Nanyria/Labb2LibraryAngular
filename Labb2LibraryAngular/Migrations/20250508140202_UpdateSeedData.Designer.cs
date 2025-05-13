@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinalProjectLibrary.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250506173609_intial")]
-    partial class intial
+    [Migration("20250508140202_UpdateSeedData")]
+    partial class UpdateSeedData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,7 +31,7 @@ namespace FinalProjectLibrary.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookID"), 1001L);
 
                     b.Property<string>("Author")
                         .IsRequired()
@@ -45,7 +45,6 @@ namespace FinalProjectLibrary.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Genre")
-                        .HasMaxLength(25)
                         .HasColumnType("int");
 
                     b.Property<int>("PublicationYear")
@@ -63,7 +62,7 @@ namespace FinalProjectLibrary.Migrations
                     b.HasData(
                         new
                         {
-                            BookID = 101,
+                            BookID = 1001,
                             Author = "F. Scott Fitzgerald",
                             BookDescription = "Lorem Ipsum",
                             BookStatus = 0,
@@ -73,7 +72,7 @@ namespace FinalProjectLibrary.Migrations
                         },
                         new
                         {
-                            BookID = 102,
+                            BookID = 1002,
                             Author = "Harper Lee",
                             BookDescription = "Lorem Ipsum",
                             BookStatus = 0,
@@ -83,7 +82,7 @@ namespace FinalProjectLibrary.Migrations
                         },
                         new
                         {
-                            BookID = 103,
+                            BookID = 1003,
                             Author = "George Orwell",
                             BookDescription = "Lorem Ipsum",
                             BookStatus = 0,
@@ -93,13 +92,78 @@ namespace FinalProjectLibrary.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FinalProjectLibrary.Models.StatusHistoryItem", b =>
+            modelBuilder.Entity("FinalProjectLibrary.Models.History.CheckedOutItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CheckOutDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReminderEmailSent")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ReturnDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CheckOutItems");
+                });
+
+            modelBuilder.Entity("FinalProjectLibrary.Models.History.ReservationItem", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1001L);
+
+                    b.Property<DateTime?>("AvailabilityDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("BookID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("BookIsAvaliableEmailSent")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ReservationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BookID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("ReservationItems");
+                });
+
+            modelBuilder.Entity("FinalProjectLibrary.Models.History.StatusHistoryItem", b =>
                 {
                     b.Property<int>("StatusHistoryItemID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StatusHistoryItemID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StatusHistoryItemID"), 1001L);
 
                     b.Property<int>("BookID")
                         .HasColumnType("int");
@@ -110,7 +174,7 @@ namespace FinalProjectLibrary.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("Timestamp")
+                    b.Property<DateTime?>("Timestamp")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("UserID")
@@ -127,27 +191,27 @@ namespace FinalProjectLibrary.Migrations
                     b.HasData(
                         new
                         {
-                            StatusHistoryItemID = 1,
-                            BookID = 101,
+                            StatusHistoryItemID = 1001,
+                            BookID = 1001,
                             BookStatus = 0,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 5, 17, 36, 8, 938, DateTimeKind.Utc).AddTicks(7385)
+                            Timestamp = new DateTime(2025, 5, 7, 14, 2, 2, 393, DateTimeKind.Utc).AddTicks(5683)
                         },
                         new
                         {
-                            StatusHistoryItemID = 2,
-                            BookID = 102,
+                            StatusHistoryItemID = 1002,
+                            BookID = 1002,
                             BookStatus = 2,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 4, 17, 36, 8, 938, DateTimeKind.Utc).AddTicks(7389)
+                            Timestamp = new DateTime(2025, 5, 6, 14, 2, 2, 393, DateTimeKind.Utc).AddTicks(5688)
                         },
                         new
                         {
-                            StatusHistoryItemID = 3,
-                            BookID = 103,
+                            StatusHistoryItemID = 1003,
+                            BookID = 1003,
                             BookStatus = 1,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 3, 17, 36, 8, 938, DateTimeKind.Utc).AddTicks(7390)
+                            Timestamp = new DateTime(2025, 5, 5, 14, 2, 2, 393, DateTimeKind.Utc).AddTicks(5690)
                         });
                 });
 
@@ -189,31 +253,77 @@ namespace FinalProjectLibrary.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("FinalProjectLibrary.Models.StatusHistoryItem", b =>
+            modelBuilder.Entity("FinalProjectLibrary.Models.History.CheckedOutItem", b =>
                 {
-                    b.HasOne("FinalProjectLibrary.Models.Books.Book", "book")
+                    b.HasOne("FinalProjectLibrary.Models.Books.Book", "Book")
+                        .WithOne("CheckedOutBy")
+                        .HasForeignKey("FinalProjectLibrary.Models.History.CheckedOutItem", "BookId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FinalProjectLibrary.Models.Users.User", "User")
+                        .WithMany("CheckedOutBooks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinalProjectLibrary.Models.History.ReservationItem", b =>
+                {
+                    b.HasOne("FinalProjectLibrary.Models.Books.Book", "Book")
+                        .WithMany("Reservations")
+                        .HasForeignKey("BookID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FinalProjectLibrary.Models.Users.User", "User")
+                        .WithMany("ReservedBooks")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinalProjectLibrary.Models.History.StatusHistoryItem", b =>
+                {
+                    b.HasOne("FinalProjectLibrary.Models.Books.Book", "Book")
                         .WithMany("StatusHistory")
                         .HasForeignKey("BookID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FinalProjectLibrary.Models.Users.User", "user")
+                    b.HasOne("FinalProjectLibrary.Models.Users.User", "User")
                         .WithMany("UserHistory")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("book");
+                    b.Navigation("Book");
 
-                    b.Navigation("user");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FinalProjectLibrary.Models.Books.Book", b =>
                 {
+                    b.Navigation("CheckedOutBy");
+
+                    b.Navigation("Reservations");
+
                     b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("FinalProjectLibrary.Models.Users.User", b =>
                 {
+                    b.Navigation("CheckedOutBooks");
+
+                    b.Navigation("ReservedBooks");
+
                     b.Navigation("UserHistory");
                 });
 #pragma warning restore 612, 618

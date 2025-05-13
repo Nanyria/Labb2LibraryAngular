@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 public class BookController : ControllerBase
 {
-    private readonly BookService _bookService;
+    private readonly IBookService _bookService;
 
-    public BookController(BookService bookService)
+    public BookController(IBookService bookService)
     {
         _bookService = bookService;
     }

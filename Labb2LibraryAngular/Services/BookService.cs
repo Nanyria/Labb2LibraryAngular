@@ -25,16 +25,17 @@ namespace FinalProjectLibrary.Services
     }
     public class BookService : IBookService
     {
+
         private readonly IBookRepo _bookRepo;
         private readonly IMapper _mapper;
-        private readonly IUserService _userService;
+        private readonly IUserRepo _userRepo;
 
 
-        public BookService(IBookRepo bookRepo, IMapper mapper, IUserService userService)
+        public BookService(IBookRepo bookRepo, IMapper mapper, IUserRepo userRepo)
         {
             _bookRepo = bookRepo;
             _mapper = mapper;
-            _userService = userService;
+            _userRepo = userRepo;
         }
 
         public async Task<APIResponse<List<BookDto>>> GetAllBookDtosAsync()
@@ -284,30 +285,21 @@ namespace FinalProjectLibrary.Services
 
             try
             {
-                var bookDtoResponse = await GetBookDtoByIdAsync(bookId);
-                var userDtoResponse = await _userService.GetUserByIdAsync(userId);
-
-                if (!bookDtoResponse.IsSuccess || bookDtoResponse.Result == null)
+                var book = await _bookRepo.GetByIdAsync(bookId);
+                var user = await _userRepo.GetUserByIdAsync(userId);
+                if (book == null || user == null)
                 {
-                    response.ErrorMessages.Add("Book not found.");
+                    string errorMessage = book == null ? "Book not found." : "User not found.";
+                    response.ErrorMessages.Add(errorMessage);
                     response.StatusCode = HttpStatusCode.NotFound;
                     return response;
                 }
 
-                if (!userDtoResponse.IsSuccess || userDtoResponse.Result == null)
-                {
-                    response.ErrorMessages.Add("User not found.");
-                    response.StatusCode = HttpStatusCode.NotFound;
-                    return response;
-                }
+                GetBookStatus(book, bookStatus); 
+                AddStatusHistoryItem(user, book, bookStatus, notes);
 
-                var bookDto = bookDtoResponse.Result;
-                var userDto = userDtoResponse.Result;
-
-                GetBookStatus(bookDto, bookStatus); 
-                AddStatusHistoryItem(userDto, bookDto, bookStatus, notes);
-
-                var book = _mapper.Map<Book>(bookDto);
+                var bookDto = _mapper.Map<BookDto>(book);
+                await _userRepo.UpdateUser(user);
                 await _bookRepo.UpdateAsync(book);
                 await _bookRepo.SaveAsync();
 
@@ -323,7 +315,7 @@ namespace FinalProjectLibrary.Services
 
             return response;
         }
-        public BookDto GetBookStatus(BookDto book, BookStatusEnum bookStatus)
+        public Book GetBookStatus(Book book, BookStatusEnum bookStatus)
         {
             if (bookStatus == BookStatusEnum.Returned)
             {
@@ -344,9 +336,9 @@ namespace FinalProjectLibrary.Services
 
             return book;
         }
-        public void AddStatusHistoryItem(UserDto user, BookDto book, BookStatusEnum bookStatus, string? notes)
+        public void AddStatusHistoryItem(User user, Book book, BookStatusEnum bookStatus, string? notes)
         {
-            var statusHistoryItem = new StatusHistoryItemDto
+            var statusHistoryItem = new StatusHistoryItem
             {
                 UserID = user.UserID,
                 BookID = book.BookID,

@@ -4,6 +4,7 @@ using FinalProjectLibrary.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinalProjectLibrary.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250508133402_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,7 +31,7 @@ namespace FinalProjectLibrary.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookID"), 1001L);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookID"));
 
                     b.Property<string>("Author")
                         .IsRequired()
@@ -59,7 +62,7 @@ namespace FinalProjectLibrary.Migrations
                     b.HasData(
                         new
                         {
-                            BookID = 1001,
+                            BookID = 101,
                             Author = "F. Scott Fitzgerald",
                             BookDescription = "Lorem Ipsum",
                             BookStatus = 0,
@@ -69,7 +72,7 @@ namespace FinalProjectLibrary.Migrations
                         },
                         new
                         {
-                            BookID = 1002,
+                            BookID = 102,
                             Author = "Harper Lee",
                             BookDescription = "Lorem Ipsum",
                             BookStatus = 0,
@@ -79,7 +82,7 @@ namespace FinalProjectLibrary.Migrations
                         },
                         new
                         {
-                            BookID = 1003,
+                            BookID = 103,
                             Author = "George Orwell",
                             BookDescription = "Lorem Ipsum",
                             BookStatus = 0,
@@ -95,7 +98,7 @@ namespace FinalProjectLibrary.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BookId")
                         .HasColumnType("int");
@@ -128,7 +131,7 @@ namespace FinalProjectLibrary.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1001L);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<DateTime?>("AvailabilityDate")
                         .HasColumnType("datetime2");
@@ -160,7 +163,7 @@ namespace FinalProjectLibrary.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StatusHistoryItemID"), 1001L);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StatusHistoryItemID"));
 
                     b.Property<int>("BookID")
                         .HasColumnType("int");
@@ -188,27 +191,27 @@ namespace FinalProjectLibrary.Migrations
                     b.HasData(
                         new
                         {
-                            StatusHistoryItemID = 1001,
-                            BookID = 1001,
+                            StatusHistoryItemID = 1,
+                            BookID = 101,
                             BookStatus = 0,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 7, 14, 2, 2, 393, DateTimeKind.Utc).AddTicks(5683)
+                            Timestamp = new DateTime(2025, 5, 7, 13, 34, 1, 762, DateTimeKind.Utc).AddTicks(1654)
                         },
                         new
                         {
-                            StatusHistoryItemID = 1002,
-                            BookID = 1002,
+                            StatusHistoryItemID = 2,
+                            BookID = 102,
                             BookStatus = 2,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 6, 14, 2, 2, 393, DateTimeKind.Utc).AddTicks(5688)
+                            Timestamp = new DateTime(2025, 5, 6, 13, 34, 1, 762, DateTimeKind.Utc).AddTicks(1659)
                         },
                         new
                         {
-                            StatusHistoryItemID = 1003,
-                            BookID = 1003,
+                            StatusHistoryItemID = 3,
+                            BookID = 103,
                             BookStatus = 1,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 5, 14, 2, 2, 393, DateTimeKind.Utc).AddTicks(5690)
+                            Timestamp = new DateTime(2025, 5, 5, 13, 34, 1, 762, DateTimeKind.Utc).AddTicks(1661)
                         });
                 });
 

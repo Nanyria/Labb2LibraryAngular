@@ -1,6 +1,7 @@
 ﻿using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Users;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FinalProjectLibrary.Models.History
 {
@@ -9,10 +10,12 @@ namespace FinalProjectLibrary.Models.History
         [Key]
         public int ID { get; set; }
         [Required]
+        [ForeignKey("User")]
         public int UserID { get; set; }
+        public User User { get; set; }
         [Required]
+        [ForeignKey("Book")]
         public int BookID { get; set; }
-        [Required]
         public Book Book { get; set; }
         public DateTime ReservationDate { get; set; }
 

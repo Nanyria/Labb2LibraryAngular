@@ -1,6 +1,7 @@
 ﻿using FinalProjectLibrary.Data;
 using FinalProjectLibrary.Models.Users;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace FinalProjectLibrary.Repositories
 {
@@ -58,6 +59,9 @@ namespace FinalProjectLibrary.Repositories
             await _db.SaveChangesAsync();
         }
 
-
+        public IQueryable<User> FindByCondition(Expression<Func<User, bool>> expression)
+        {
+            return _db.Users.Where(expression);
+        }
     }
 }

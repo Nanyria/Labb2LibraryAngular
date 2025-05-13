@@ -18,24 +18,6 @@ namespace FinalProjectLibrary
                 .ForMember(dest => dest.StatusHistory, opt => opt.Ignore());
 
 
-            // Update for BookStatus - Map StatusHistoryItem from DTO
-            CreateMap<BookDto, Book>()
-                .ForMember(dest => dest.StatusHistory, opt => opt.MapFrom(src =>
-                    new List<StatusHistoryItem>
-                    {
-                    new StatusHistoryItem
-                    {
-                        BookStatus = src.BookStatus, // Map the BookStatus from DTO
-                        Timestamp = DateTime.UtcNow, // Timestamp when the status is updated
-                        Notes = "Stock status updated" // Or you can make this dynamic if needed
-                    }
-                    }))
-                .ForMember(dest => dest.Title, opt => opt.Ignore())       // Explicitly ignore unwanted fields
-                .ForMember(dest => dest.Author, opt => opt.Ignore())
-                .ForMember(dest => dest.Genre, opt => opt.Ignore())
-                .ForMember(dest => dest.PublicationYear, opt => opt.Ignore())
-                .ForMember(dest => dest.BookDescription, opt => opt.Ignore())
-                .ReverseMap();
 
 
             CreateMap<User, UserDto>()
@@ -46,14 +28,38 @@ namespace FinalProjectLibrary
 
             CreateMap<User, CreateUserDto>();
             CreateMap<CreateUserDto, User>();
-            // Map between User and UpdateUserAsAdminDto
             CreateMap<User, UpdateUserAsAdminDto>().ReverseMap();
-
-            // Map between User and UpdateUserDto
             CreateMap<User, UpdateUserDto>().ReverseMap();
+
+
+
             CreateMap<StatusHistoryItem, StatusHistoryItemDto>().ReverseMap();
-            CreateMap<ReservationItem, ReservationItemDto>().ReverseMap();
-            CreateMap<CheckedOutItem, CheckedOutItemDto>().ReverseMap();
+            CreateMap<ReservationItem, ReservationItemDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName)) // Map UserName
+                .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))   // Map BookTitle
+                .ReverseMap();
+            CreateMap<CheckedOutItem, CheckedOutItemDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName)) // Map UserName
+                .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book.Title))   // Map BookTitle
+                .ReverseMap();
+
+            //// Update for BookStatus - Map StatusHistoryItem from DTO
+            //CreateMap<BookDto, Book>()
+            //    .ForMember(dest => dest.StatusHistory, opt => opt.MapFrom(src =>
+            //        new List<StatusHistoryItem>
+            //        {
+            //        new StatusHistoryItem
+            //        {
+            //            BookStatus = src.BookStatus, // Map the BookStatus from DTO
+            //            Timestamp = DateTime.UtcNow, // Timestamp when the status is updated
+            //        }
+            //        }))
+            //    .ForMember(dest => dest.Title, opt => opt.Ignore())       // Explicitly ignore unwanted fields
+            //    .ForMember(dest => dest.Author, opt => opt.Ignore())
+            //    .ForMember(dest => dest.Genre, opt => opt.Ignore())
+            //    .ForMember(dest => dest.PublicationYear, opt => opt.Ignore())
+            //    .ForMember(dest => dest.BookDescription, opt => opt.Ignore())
+            //    .ReverseMap();
         }
     }
 }
