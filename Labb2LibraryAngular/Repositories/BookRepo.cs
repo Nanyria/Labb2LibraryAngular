@@ -38,7 +38,7 @@ namespace FinalProjectLibrary.Repositories
                 .FirstOrDefaultAsync(b => b.BookID == id);
         }
 
-        public async Task<List<Book>> GetByTitleAsync(string title)
+        public async Task<IEnumerable<Book>> GetByTitleAsync(string title)
         {
             return await _db.Books
                 .Include(b => b.StatusHistory)
@@ -46,7 +46,7 @@ namespace FinalProjectLibrary.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Book>> GetByAuthorAsync(string author)
+        public async Task<IEnumerable<Book>> GetByAuthorAsync(string author)
         {
             return await _db.Books
                 .Include(b => b.StatusHistory)
@@ -64,8 +64,9 @@ namespace FinalProjectLibrary.Repositories
             _db.Books.Update(book);
         }
 
-        public async Task UpdateStockAsync(int id, Book book)
+        public async Task UpdateStatusAsync(int id, Book book)
         {
+
             _db.Books.Update(book);
         }
     }

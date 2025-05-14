@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FinalProjectLibrary.Data;
 using FinalProjectLibrary.Enums;
 using FinalProjectLibrary.Models;
 using FinalProjectLibrary.Models.Books;
@@ -9,19 +10,20 @@ using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Models.Users.UserDTOs;
 using FinalProjectLibrary.Repositories;
 using System.Net;
+using static FinalProjectLibrary.Models.Books.BookDTOs.BookDto;
 
 namespace FinalProjectLibrary.Services
 {
     public interface IBookService
     {
-        Task<APIResponse<List<BookDto>>> GetAllBookDtosAsync();
-        Task<APIResponse<BookDto>> GetBookDtoByIdAsync(int id);
-        Task<APIResponse<List<BookDto>>> GetBookDtosByTitleAsync(string title);
-        Task<APIResponse<List<BookDto>>> GetBookDtosByAuthorAsync(string author);
-        Task<APIResponse<BookDto>> AddBookDtoAsync(BookDto bookDto);
-        Task<APIResponse<BookDto>> DeleteBookAsync(int id);
-        Task<APIResponse<BookDto>> UpdateBookInfoAsync(int id, BookDto bookDto);
-        Task<APIResponse<BookDto>> UpdateBookStatusAsync(int id, int userId, BookStatusEnum bookStatus, string? n);
+        Task<APIResponse<List<Book>>> GetAllBooksAsync();
+        Task<APIResponse<Book>> GetBookByIdAsync(int id);
+        Task<APIResponse<List<Book>>> GetBooksByTitleAsync(string title);
+        Task<APIResponse<List<Book>>> GetBooksByAuthorAsync(string author);
+        Task<APIResponse<Book>> AddBookAsync(Book book);
+        Task<APIResponse<Book>> DeleteBookAsync(int id);
+        Task<APIResponse<Book>> UpdateBookInfoAsync(int id, Book bookDto);
+        Task<APIResponse<Book>> UpdateBookStatusAsync(Book book, User user, BookStatusEnum bookStatus, string? n);
     }
     public class BookService : IBookService
     {
@@ -29,26 +31,27 @@ namespace FinalProjectLibrary.Services
         private readonly IBookRepo _bookRepo;
         private readonly IMapper _mapper;
         private readonly IUserRepo _userRepo;
+        private readonly AppDbContext _dbContext;
 
 
-        public BookService(IBookRepo bookRepo, IMapper mapper, IUserRepo userRepo)
+        public BookService(IBookRepo bookRepo, IMapper mapper, IUserRepo userRepo, AppDbContext dbContext)
         {
             _bookRepo = bookRepo;
             _mapper = mapper;
             _userRepo = userRepo;
+            _dbContext = dbContext;
         }
 
-        public async Task<APIResponse<List<BookDto>>> GetAllBookDtosAsync()
+        public async Task<APIResponse<List<Book>>> GetAllBooksAsync()
         {
-            var response = new APIResponse<List<BookDto>>();
+            var response = new APIResponse<List<Book>>();
 
             try
             {
                 var books = await _bookRepo.GetAllAsync();
-                var bookDTOs = _mapper.Map<List<BookDto>>(books);
 
 
-                response.Result = bookDTOs;
+                response.Result = books.ToList();
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.OK;
             }
@@ -62,17 +65,16 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<BookDto>> GetBookDtoByIdAsync(int id)
+        public async Task<APIResponse<Book>> GetBookByIdAsync(int id)
         {
-            var response = new APIResponse<BookDto>();
+            var response = new APIResponse<Book>();
 
             try
             {
                 var book = await _bookRepo.GetByIdAsync(id);
                 if (book != null)
                 {
-                    var bookDTO = _mapper.Map<BookDto>(book);
-                    response.Result = bookDTO;
+                    response.Result = book;
                     response.IsSuccess = true;
                     response.StatusCode = HttpStatusCode.OK;
                 }
@@ -93,9 +95,9 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<List<BookDto>>> GetBookDtosByTitleAsync(string title)
+        public async Task<APIResponse<List<Book>>> GetBooksByTitleAsync(string title)
         {
-            var response = new APIResponse<List<BookDto>>();
+            var response = new APIResponse<List<Book>>();
 
             try
             {
@@ -103,8 +105,7 @@ namespace FinalProjectLibrary.Services
                 if (books.Any())
                 {
 
-                    var bookDTOs = _mapper.Map<List<BookDto>>(books);
-                    response.Result = bookDTOs;
+                    response.Result = books.ToList();
                     response.IsSuccess = true;
                     response.StatusCode = HttpStatusCode.OK;
                 }
@@ -125,9 +126,9 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<List<BookDto>>> GetBookDtosByAuthorAsync(string author)
+        public async Task<APIResponse<List<Book>>> GetBooksByAuthorAsync(string author)
         {
-            var response = new APIResponse<List<BookDto>>();
+            var response = new APIResponse<List<Book>>();
 
             try
             {
@@ -135,8 +136,7 @@ namespace FinalProjectLibrary.Services
                 if (books.Any())
                 {
 
-                    var bookDTOs = _mapper.Map<List<BookDto>>(books);
-                    response.Result = bookDTOs;
+                    response.Result = books.ToList();
                     response.IsSuccess = true;
                     response.StatusCode = HttpStatusCode.OK;
                 }
@@ -157,15 +157,15 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<BookDto>> AddBookDtoAsync(BookDto bookDto)
+        public async Task<APIResponse<Book>> AddBookAsync(Book book)
         {
-            var response = new APIResponse<BookDto>
+            var response = new APIResponse<Book>
             {
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
 
-            if (string.IsNullOrEmpty(bookDto.Title))
+            if (string.IsNullOrEmpty(book.Title))
             {
                 response.ErrorMessages.Add("Title must not be empty.");
                 return response;
@@ -173,22 +173,20 @@ namespace FinalProjectLibrary.Services
 
             try
             {
-                var book = new Book
+                book = new Book
                 {
-                    Title = bookDto.Title,
-                    Author = bookDto.Author,
-                    Genre = bookDto.Genre,
-                    BookDescription = bookDto.BookDescription,
-                    PublicationYear = bookDto.PublicationYear,
+                    Title = book.Title,
+                    Author = book.Author,
+                    Genre = book.Genre,
+                    BookDescription = book.BookDescription,
+                    PublicationYear = book.PublicationYear,
                     BookStatus = BookStatusEnum.Available 
                 };
 
                 await _bookRepo.CreateBookAsync(book);
                 await _bookRepo.SaveAsync();
 
-                var savedBookDto = _mapper.Map<BookDto>(book);
-
-                response.Result = savedBookDto;
+                response.Result = book;
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.Created;
             }
@@ -201,20 +199,19 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<BookDto>> DeleteBookAsync(int id)
+        public async Task<APIResponse<Book>> DeleteBookAsync(int id)
         {
-            var response = new APIResponse<BookDto>();
+            var response = new APIResponse<Book>();
 
             try
             {
-                var book = await _bookRepo.GetByIdAsync(id);
-                if (book != null)
+                var bookToDelete = await _bookRepo.GetByIdAsync(id);
+                if (bookToDelete != null)
                 {
-                    var deletedBook = _mapper.Map<BookDto>(book);
-                    await _bookRepo.DeleteAsync(book);
+                    await _bookRepo.DeleteAsync(bookToDelete);
                     await _bookRepo.SaveAsync();
 
-                    response.Result = deletedBook;
+                    response.Result = bookToDelete;
                     response.IsSuccess = true;
                     response.StatusCode = HttpStatusCode.OK;
                 }
@@ -234,9 +231,9 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<BookDto>> UpdateBookInfoAsync(int id, BookDto bookDto)
+        public async Task<APIResponse<Book>> UpdateBookInfoAsync(int id, Book updatedBook)
         {
-            var response = new APIResponse<BookDto>
+            var response = new APIResponse<Book>
             {
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
@@ -247,16 +244,15 @@ namespace FinalProjectLibrary.Services
                 var existingBook = await _bookRepo.GetByIdAsync(id);
                 if (existingBook != null)
                 {
-                    existingBook.Title = bookDto.Title;
-                    existingBook.Author = bookDto.Author;
-                    existingBook.Genre = bookDto.Genre;
-                    existingBook.PublicationYear = bookDto.PublicationYear;
-                    existingBook.BookDescription = bookDto.BookDescription;
+                    existingBook.Title = updatedBook.Title ?? existingBook.Title;
+                    existingBook.Author = updatedBook.Author ?? existingBook.Author;
+                    existingBook.Genre = updatedBook.Genre != default ? updatedBook.Genre : existingBook.Genre;
+                    existingBook.PublicationYear = updatedBook.PublicationYear != default ? updatedBook.PublicationYear : existingBook.PublicationYear;
+                    existingBook.BookDescription = updatedBook.BookDescription ?? existingBook.BookDescription;
 
                     await _bookRepo.SaveAsync();
 
-                    var updatedBookDto = _mapper.Map<BookDto>(existingBook);
-                    response.Result = updatedBookDto;
+                    response.Result = updatedBook;
                     response.IsSuccess = true;
                     response.StatusCode = HttpStatusCode.OK;
                 }
@@ -275,9 +271,9 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<BookDto>> UpdateBookStatusAsync(int bookId, int userId, BookStatusEnum bookStatus, string? notes)
+        public async Task<APIResponse<Book>> UpdateBookStatusAsync(Book book, User user, BookStatusEnum bookStatus, string? notes)
         {
-            var response = new APIResponse<BookDto>
+            var response = new APIResponse<Book>
             {
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
@@ -285,8 +281,6 @@ namespace FinalProjectLibrary.Services
 
             try
             {
-                var book = await _bookRepo.GetByIdAsync(bookId);
-                var user = await _userRepo.GetUserByIdAsync(userId);
                 if (book == null || user == null)
                 {
                     string errorMessage = book == null ? "Book not found." : "User not found.";
@@ -295,15 +289,17 @@ namespace FinalProjectLibrary.Services
                     return response;
                 }
 
-                GetBookStatus(book, bookStatus); 
+                var newBookStatus = GetBookStatus(book, bookStatus); 
                 AddStatusHistoryItem(user, book, bookStatus, notes);
 
-                var bookDto = _mapper.Map<BookDto>(book);
+                book.BookStatus = newBookStatus.BookStatus;
+                book.CheckedOutBy = newBookStatus.CheckedOutBy ?? book.CheckedOutBy;
+                book.Reservations = newBookStatus.Reservations ?? book.Reservations;
                 await _userRepo.UpdateUser(user);
                 await _bookRepo.UpdateAsync(book);
                 await _bookRepo.SaveAsync();
 
-                response.Result = bookDto;
+                response.Result = newBookStatus;
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.OK;
             }
@@ -347,8 +343,10 @@ namespace FinalProjectLibrary.Services
                 Notes = notes
             };
 
+            _dbContext.StatusHistoryItems.Add(statusHistoryItem);
             user.UserHistory.Add(statusHistoryItem);
             book.StatusHistory.Add(statusHistoryItem);
+            
         }
 
         public BookStatusEnum GetCurrentStatus(Book book)

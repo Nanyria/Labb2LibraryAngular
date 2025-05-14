@@ -51,5 +51,15 @@ namespace FinalProjectLibrary.Models.Books.BookDTOs
         //    public string BookDescription { get; set; }
 
         //}
+        public class UpdateBookStatusDTO
+        {
+
+            public int BookID { get; set; }
+            public BookStatusEnum BookStatus { get; set; }
+            public CheckedOutItemDto? CheckedOutBy { get; set; }
+            public List<StatusHistoryItemDto> StatusHistory { get; set; } = new();
+            public List<ReservationItemDto> Reservations { get; set; } = new();
+
+        }
     }
 }

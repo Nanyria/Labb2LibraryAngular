@@ -30,6 +30,8 @@ namespace FinalProjectLibrary.Repositories
         {
             return await _db.Users
                 .Include(u => u.UserHistory)
+                .Include(u => u.ReservedBooks)
+                .Include(u => u.CheckedOutBooks)
                 .ToListAsync();
         }
 
@@ -37,6 +39,8 @@ namespace FinalProjectLibrary.Repositories
         {
             return await _db.Users
                 .Include(u => u.UserHistory)
+                .Include(u => u.ReservedBooks)
+                .Include(u => u.CheckedOutBooks)
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
@@ -44,6 +48,8 @@ namespace FinalProjectLibrary.Repositories
         {
             return await _db.Users
                 .Include(u => u.UserHistory)
+                .Include(u => u.ReservedBooks)
+                .Include(u => u.CheckedOutBooks)
                 .FirstOrDefaultAsync(u => u.UserID == id);
         }
 
@@ -51,6 +57,8 @@ namespace FinalProjectLibrary.Repositories
         {
             return await _db.Users
                 .Include(u => u.UserHistory)
+                .Include(u => u.ReservedBooks)
+                .Include(u => u.CheckedOutBooks)
                 .FirstOrDefaultAsync(u => u.UserName.ToLower() == userName.ToLower());
         }
 

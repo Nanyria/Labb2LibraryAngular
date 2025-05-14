@@ -6,6 +6,7 @@ using FinalProjectLibrary.Models.History;
 using FinalProjectLibrary.Models.History.HistoryDTOs;
 using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Models.Users.UserDTOs;
+using static FinalProjectLibrary.Models.Books.BookDTOs.BookDto;
 
 namespace FinalProjectLibrary
 {
@@ -17,6 +18,7 @@ namespace FinalProjectLibrary
                 .ReverseMap()
                 .ForMember(dest => dest.StatusHistory, opt => opt.Ignore());
 
+            CreateMap<Book, UpdateBookStatusDTO>().ReverseMap();
 
 
 
