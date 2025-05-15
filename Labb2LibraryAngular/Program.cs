@@ -1,8 +1,14 @@
 
 using FinalProjectLibrary.Data;
+using FinalProjectLibrary.Helpers;
+using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Repositories;
 using FinalProjectLibrary.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace FinalProjectLibrary
 {
@@ -10,13 +16,14 @@ namespace FinalProjectLibrary
     {
         public static void Main(string[] args)
         {
+
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-                    options.JsonSerializerOptions.WriteIndented = true; // Optional: For better readability
+                    options.JsonSerializerOptions.WriteIndented = true; 
                 });
           
             builder.Services.AddEndpointsApiExplorer();
@@ -35,7 +42,35 @@ namespace FinalProjectLibrary
             {
                 options.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin();
             }));
+
+            builder.Services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
+            });
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                Helper.IdentityDataInitializer.SeedRolesAndAdminAsync(services).GetAwaiter().GetResult();
+            }
 
 
             // Configure the HTTP request pipeline.
@@ -48,9 +83,9 @@ namespace FinalProjectLibrary
             app.UseCors("default");
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
+            
 
             app.MapControllers();
 

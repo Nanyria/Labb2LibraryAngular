@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using FinalProjectLibrary.Enums;
+﻿using FinalProjectLibrary.Helpers.Enums;
 using FinalProjectLibrary.Models.Books;
-using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Models.History;
+using FinalProjectLibrary.Models.Users;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinalProjectLibrary.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<User>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -21,9 +22,9 @@ namespace FinalProjectLibrary.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {   
             base.OnModelCreating(modelBuilder);
-
-            // ReservationItem relationships
-            modelBuilder.Entity<ReservationItem>()
+        
+        // ReservationItem relationships
+        modelBuilder.Entity<ReservationItem>()
                 .HasOne(r => r.User)
                 .WithMany(u => u.ReservedBooks)
                 .HasForeignKey(r => r.UserID)
@@ -61,11 +62,6 @@ namespace FinalProjectLibrary.Data
                 .HasForeignKey(sh => sh.UserID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<User>()
-                .Property(u => u.UserID)
-                .ValueGeneratedOnAdd()
-                .UseIdentityColumn(seed: 1001, increment: 1);
-
             modelBuilder.Entity<Book>()
                 .Property(b => b.BookID)
                 .ValueGeneratedOnAdd()
@@ -96,6 +92,7 @@ namespace FinalProjectLibrary.Data
                     Genre = GenreEnums.Fiction,
                     PublicationYear = 1925,
                     BookDescription = "Lorem Ipsum",
+                    BookType = BookTypeEnums.Hardcover,
                     BookStatus = BookStatusEnum.Available,
                 },
                 new Book
@@ -106,6 +103,7 @@ namespace FinalProjectLibrary.Data
                     Genre = GenreEnums.Fiction,
                     PublicationYear = 1960,
                     BookDescription = "Lorem Ipsum",
+                    BookType = BookTypeEnums.Hardcover,
                     BookStatus = BookStatusEnum.Available,
                 },
                 new Book
@@ -116,6 +114,7 @@ namespace FinalProjectLibrary.Data
                     Genre = GenreEnums.Fiction,
                     PublicationYear = 1949,
                     BookDescription = "Lorem Ipsum",
+                    BookType = BookTypeEnums.Paperback,
                     BookStatus = BookStatusEnum.Available,
                 }
             );

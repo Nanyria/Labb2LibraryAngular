@@ -1,4 +1,4 @@
-﻿using FinalProjectLibrary.Enums;
+﻿using FinalProjectLibrary.Helpers.Enums;
 using FinalProjectLibrary.Models.Books;
 
 namespace FinalProjectLibrary.Models.Users

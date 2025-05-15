@@ -1,13 +1,13 @@
 ﻿using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.History;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinalProjectLibrary.Models.Users
 {
-    public class User
+    public class User : IdentityUser
     {
-        [Key]
-        public int UserID { get; set; }
+
         [Required]
         [MaxLength(100)]
         public required string UserName { get; set; }
@@ -20,9 +20,6 @@ namespace FinalProjectLibrary.Models.Users
         [Required]
         [MaxLength(100)]
         public required string Email { get; set; }
-        [Required]
-        [MaxLength(100)]
-        public required string Password { get; set; }
 
         public List<CheckedOutItem> CheckedOutBooks { get; set; } = new List<CheckedOutItem>();
         public List<ReservationItem> ReservedBooks { get; set; } = new List<ReservationItem>();

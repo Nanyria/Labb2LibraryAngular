@@ -1,4 +1,4 @@
-﻿using FinalProjectLibrary.Enums;
+﻿using FinalProjectLibrary.Helpers.Enums;
 using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Users;
 using System.ComponentModel.DataAnnotations;
@@ -15,7 +15,7 @@ namespace FinalProjectLibrary.Models.History
         [Required]
         public Book Book { get; set; }
         [ForeignKey("User")]
-        public int? UserID { get; set; }
+        public string? UserID { get; set; }
         public User? User { get; set; }
         [Required]
 

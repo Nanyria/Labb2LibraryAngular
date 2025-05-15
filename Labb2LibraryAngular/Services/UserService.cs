@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Azure;
 using FinalProjectLibrary.Data;
-using FinalProjectLibrary.Enums;
+using FinalProjectLibrary.Helpers.Enums;
 using FinalProjectLibrary.Models;
 using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Books.BookDTOs;
@@ -10,6 +10,8 @@ using FinalProjectLibrary.Models.History.HistoryDTOs;
 using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Models.Users.UserDTOs;
 using FinalProjectLibrary.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Net;
 
@@ -18,15 +20,16 @@ namespace FinalProjectLibrary.Services
     public interface IUserService
     {
         Task<APIResponse<CreateUserDto>> AddUserAsync(CreateUserDto createUserDTO);
-        Task<APIResponse<User>> DeleteUserAsync(int userId);
-        Task<APIResponse<UpdateUserAsAdminDto>> UpdateUserAsAdminAsync(int userId, UpdateUserAsAdminDto userToUpdate);
-        Task<APIResponse<UpdateUserDto>> UpdateUserAsync(int userId, UpdateUserDto userToUpdate);
-        Task<APIResponse<User>> GetUserByIdAsync(int userId);
+        Task<APIResponse<User>> DeleteUserAsync(string userId);
+        Task<APIResponse<UpdateUserAsAdminDto>> UpdateUserAsAdminAsync(string userId, UpdateUserAsAdminDto userToUpdate);
+        Task<APIResponse<UpdateUserDto>> UpdateUserAsync(string userId, UpdateUserDto userToUpdate);
+        Task<APIResponse<User>> GetUserByIdAsync(string userId);
         Task<APIResponse<List<User>>> GetAllUsersAsync();
-        Task<APIResponse<User>> ReserveBookAsync(int userId, int bookId);
-        Task<APIResponse<User>> CancelReservationAsync(int userId, int bookId);
-        Task<APIResponse<User>> CheckOutBookAsync(int userId, int bookId);
-        Task<APIResponse<User>> ReturnBookAsync(int userId, int bookId);
+        Task<APIResponse<User>> ReserveBookAsync(string userId, int bookId);
+        Task<APIResponse<User>> CancelReservationAsync(string userId, int bookId);
+        Task<APIResponse<User>> CheckOutBookAsync(string userId, int bookId);
+        Task<APIResponse<User>> ReturnBookAsync(string userId, int bookId);
+        Task<APIResponse<CreateAdminUserDto>> CreateAdminUserAsync(CreateAdminUserDto createAdminUserDto);
     }
     
     public class UserService : IUserService
@@ -36,14 +39,16 @@ namespace FinalProjectLibrary.Services
         private readonly IMapper _mapper;
         private readonly IBookService _bookService;
         private readonly AppDbContext _dbContext;
+        private readonly UserManager<User> _userManager;
 
-        public UserService(IUserRepo userRepo, IBookRepo bookRepo, IMapper mapper, IBookService bookService, AppDbContext dbContext)
+        public UserService(IUserRepo userRepo, IBookRepo bookRepo, IMapper mapper, IBookService bookService, AppDbContext dbContext, UserManager<User> userManager)
         {
             _userRepo = userRepo;
             _bookRepo = bookRepo;
             _mapper = mapper;
             _bookService = bookService;
             _dbContext = dbContext;
+            _userManager = userManager;
         }
 
         public async Task<APIResponse<CreateUserDto>> AddUserAsync(CreateUserDto createUserDTO)
@@ -53,9 +58,16 @@ namespace FinalProjectLibrary.Services
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
+            CheckIfExists(createUserDTO.Email, createUserDTO.UserName);
+
             var user = _mapper.Map<User>(createUserDTO);
-            await _userRepo.CreateUserAsync(user);
-            await _userRepo.SaveUserAsync();
+            // Create user with password
+            var result = await _userManager.CreateAsync(user, createUserDTO.Password);
+            if (!result.Succeeded)
+            {
+                response.ErrorMessages.AddRange(result.Errors.Select(e => e.Description));
+                return response;
+            }
 
             var createdUserDto = _mapper.Map<CreateUserDto>(user);
             response.IsSuccess = true;
@@ -63,19 +75,76 @@ namespace FinalProjectLibrary.Services
             response.Result = createdUserDto;
             return response;
         }
-        public async Task<APIResponse<User>> DeleteUserAsync (int userId)
+        public async Task<APIResponse<CreateAdminUserDto>> CreateAdminUserAsync(CreateAdminUserDto createAdminUserDto)
+        {
+            var response = new APIResponse<CreateAdminUserDto>
+            {
+                IsSuccess = false,
+                StatusCode = HttpStatusCode.BadRequest
+            };
+            if (!AdminRoles.AllRoles.Contains(createAdminUserDto.AdminRole))
+            {
+                response.ErrorMessages.Add("Invalid AdminRole.");
+                return response;
+
+            }
+            CheckIfExists(createAdminUserDto.Email, createAdminUserDto.UserName);
+            var user = _mapper.Map<User>(createAdminUserDto);
+
+            // Create user with password
+            var result = await _userManager.CreateAsync(user, createAdminUserDto.Password);
+            if (!result.Succeeded)
+            {
+                response.ErrorMessages.AddRange(result.Errors.Select(e => e.Description));
+                return response;
+            }
+
+            // Assign admin role
+            var roleResult = await _userManager.AddToRoleAsync(user, createAdminUserDto.AdminRole);
+            if (!roleResult.Succeeded)
+            {
+                response.ErrorMessages.AddRange(roleResult.Errors.Select(e => e.Description));
+                return response;
+            }
+
+            response.IsSuccess = true;
+            response.StatusCode = HttpStatusCode.Created;
+            response.Result = createAdminUserDto;
+            return response;
+        }
+
+        private void CheckIfExists(string email, string userName)
+        {
+            var user = _userRepo.GetByEmailAsync<User>(email).Result;
+            if (user != null)
+            {
+                throw new Exception("Email already exists.");
+            }
+            var userNameExists = _userRepo.GetByUserNameAsync<User>(userName).Result;
+            if (userNameExists != null)
+            {
+                throw new Exception("UserName already exists.");
+            }
+        }
+        public async Task<APIResponse<User>> DeleteUserAsync(string userId)
         {
             var response = new APIResponse<User>
             {
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
-            var user = await _userRepo.GetUserByIdAsync(userId);
+
+            // Find the user using UserManager (by Id)
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user != null)
             {
-
-                await _userRepo.DeleteUser(user);
-                await _userRepo.SaveUserAsync();
+                var result = await _userManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                {
+                    response.ErrorMessages.AddRange(result.Errors.Select(e => e.Description));
+                    response.StatusCode = HttpStatusCode.InternalServerError;
+                    return response;
+                }
 
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.NoContent;
@@ -88,21 +157,38 @@ namespace FinalProjectLibrary.Services
             }
             return response;
         }
-        public async Task<APIResponse<UpdateUserAsAdminDto>> UpdateUserAsAdminAsync(int userId, UpdateUserAsAdminDto userToUpdate)
+
+        public async Task<APIResponse<UpdateUserAsAdminDto>> UpdateUserAsAdminAsync(string userId, UpdateUserAsAdminDto userToUpdate)
         {
             var response = new APIResponse<UpdateUserAsAdminDto>
             {
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
-            var user = await _userRepo.GetUserByIdAsync(userId);
+            var user = await _userRepo.GetByIdAsync<User>(userId);
             if (user != null)
             {
                 // Map UpdateUserAsAdminDto to User
                 _mapper.Map(userToUpdate, user);
+                // If password is being changed, use UserManager
+                if (!string.IsNullOrWhiteSpace(userToUpdate.Password))
+                {
+                    // Remove old password and set new one
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var passwordResult = await _userManager.ResetPasswordAsync(user, token, userToUpdate.Password);
+                    if (!passwordResult.Succeeded)
+                    {
+                        response.ErrorMessages.AddRange(passwordResult.Errors.Select(e => e.Description));
+                        return response;
+                    }
+                }
 
-                await _userRepo.UpdateUser(user);
-                await _userRepo.SaveUserAsync();
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    response.ErrorMessages.AddRange(updateResult.Errors.Select(e => e.Description));
+                    return response;
+                }
 
                 // Map updated User to UpdateUserAsAdminDto for the response
                 var updatedUserDto = _mapper.Map<UpdateUserAsAdminDto>(user);
@@ -117,25 +203,38 @@ namespace FinalProjectLibrary.Services
             }
             return response;
         }
-        public async Task<APIResponse<UpdateUserDto>> UpdateUserAsync(int userId, UpdateUserDto userToUpdate)
+        public async Task<APIResponse<UpdateUserDto>> UpdateUserAsync(string userId, UpdateUserDto userToUpdate)
         {
             var response = new APIResponse<UpdateUserDto>
             {
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
-            var user = await _userRepo.GetUserByIdAsync(userId);
+            var user = await _userRepo.GetByIdAsync<User>(userId);
             if (user != null)
             {
                 // Map UpdateUserDto to User
                 _mapper.Map(userToUpdate, user);
 
-                await _userRepo.UpdateUser(user);
-                await _userRepo.SaveUserAsync();
+                if (!string.IsNullOrWhiteSpace(userToUpdate.Password))
+                {
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var passwordResult = await _userManager.ResetPasswordAsync(user, token, userToUpdate.Password);
+                    if (!passwordResult.Succeeded)
+                    {
+                        response.ErrorMessages.AddRange(passwordResult.Errors.Select(e => e.Description));
+                        return response;
+                    }
+                }
 
-                // Map updated User to UpdateUserDto for the response
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    response.ErrorMessages.AddRange(updateResult.Errors.Select(e => e.Description));
+                    return response;
+                }
+
                 var updatedUserDto = _mapper.Map<UpdateUserDto>(user);
-
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.OK;
                 response.Result = updatedUserDto;
@@ -147,14 +246,14 @@ namespace FinalProjectLibrary.Services
             }
             return response;
         }
-        public async Task<APIResponse<User>> GetUserByIdAsync(int userId)
+        public async Task<APIResponse<User>> GetUserByIdAsync(string userId)
         {
             var response = new APIResponse<User>
             {
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
-            var user = await _userRepo.GetUserByIdAsync(userId);
+            var user = await _userRepo.GetByIdAsync<User>(userId);
             if (user != null)
             {
 
@@ -176,20 +275,31 @@ namespace FinalProjectLibrary.Services
                 IsSuccess = false,
                 StatusCode = HttpStatusCode.BadRequest
             };
-            var users = await _userRepo.GetAllUsersAsync();
-            if (users != null)
+            try
             {
-                response.IsSuccess = true;
-                response.StatusCode = HttpStatusCode.OK;
+                var users = await _userRepo.GetAllAsync<User>();
+                if (users != null)
+                {
+                    response.Result = users.ToList();
+                    response.IsSuccess = true;
+                    response.StatusCode = HttpStatusCode.OK;
+                }
+                else
+                {
+                    response.ErrorMessages.Add("No users found.");
+                    response.StatusCode = HttpStatusCode.NotFound;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                response.ErrorMessages.Add("No users found.");
-                response.StatusCode = HttpStatusCode.NotFound;
+                response.IsSuccess = false;
+                response.ErrorMessages.Add(ex.Message);
+                response.StatusCode = HttpStatusCode.InternalServerError;
             }
+        
             return response;
         }
-        public async Task<APIResponse<User>> ReserveBookAsync(int userId, int bookId)
+        public async Task<APIResponse<User>> ReserveBookAsync(string userId, int bookId)
         {
             var response = new APIResponse<User>
             {
@@ -197,7 +307,7 @@ namespace FinalProjectLibrary.Services
                 StatusCode = HttpStatusCode.BadRequest
             };
 
-            var user = await _userRepo.GetUserByIdAsync(userId);
+            var user = await _userRepo.GetByIdAsync<User>(userId);
             var book = await _bookRepo.GetByIdAsync(bookId);
 
             if (user == null || book == null)
@@ -249,7 +359,7 @@ namespace FinalProjectLibrary.Services
                 Book = book,
                 BookIsAvaliableEmailSent = null,
                 AvailabilityDate = null,
-                UserID = user.UserID,
+                UserID = user.Id,
                 User = user,
                 ReservationDate = DateTime.UtcNow
             };
@@ -274,7 +384,7 @@ namespace FinalProjectLibrary.Services
             return false; 
         }
 
-        public async Task<APIResponse<User>> CancelReservationAsync(int userId, int bookId)
+        public async Task<APIResponse<User>> CancelReservationAsync(string userId, int bookId)
         {
             var response = new APIResponse<User>
             {
@@ -295,7 +405,7 @@ namespace FinalProjectLibrary.Services
                 {
                     await _bookService.UpdateBookStatusAsync(book, user, BookStatusEnum.Available, $"Reservation cancelled by {user.UserName}");
 
-                    await _userRepo.SaveUserAsync();
+                    await _userRepo.SaveAsync();
                     await _bookRepo.SaveAsync();
 
 
@@ -318,7 +428,7 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<User>> CheckOutBookAsync(int userId, int bookId)
+        public async Task<APIResponse<User>> CheckOutBookAsync(string userId, int bookId)
         {
             var response = new APIResponse<User>
             {
@@ -348,8 +458,8 @@ namespace FinalProjectLibrary.Services
                     return response;
                 }
 
-                await _userRepo.UpdateUser(user);
-                await _userRepo.SaveUserAsync();
+                await _userRepo.UpdateAsync(user);
+                await _userRepo.SaveAsync();
                 response.IsSuccess = true;
                 response.StatusCode = HttpStatusCode.OK;
                 response.Result = user;
@@ -367,14 +477,14 @@ namespace FinalProjectLibrary.Services
             var checkedOutItem = new CheckedOutItem
             {
                 BookId = book.BookID,
-                UserId = user.UserID,
+                UserId = user.Id,
                 CheckOutDate = DateTime.UtcNow,
                 ReturnDate = DateTime.UtcNow.AddMonths(1),
             };
             user.CheckedOutBooks.Add(checkedOutItem);
         }
 
-        public async Task<APIResponse<User>> ReturnBookAsync(int userId, int bookId)
+        public async Task<APIResponse<User>> ReturnBookAsync(string userId, int bookId)
         {
             var response = new APIResponse<User>
             {
@@ -394,7 +504,7 @@ namespace FinalProjectLibrary.Services
                 }
                 await _bookService.UpdateBookStatusAsync(book, user, BookStatusEnum.Returned, $"Returned by {user.UserName}");
 
-                await _userRepo.SaveUserAsync();
+                await _userRepo.SaveAsync();
                 await _bookRepo.SaveAsync();
 
                 response.IsSuccess = true;
@@ -424,5 +534,7 @@ namespace FinalProjectLibrary.Services
 
             return false;
         }
+
+
     }
 }

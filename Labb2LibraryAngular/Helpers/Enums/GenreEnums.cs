@@ -1,7 +1,8 @@
-﻿namespace FinalProjectLibrary.Enums
+﻿namespace FinalProjectLibrary.Helpers.Enums
 {
     public enum GenreEnums
     {
+        None,
         Fantasy,
         Children,
         Romance,

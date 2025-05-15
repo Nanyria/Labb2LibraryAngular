@@ -11,7 +11,7 @@ namespace FinalProjectLibrary.Models.History
         public int ID { get; set; }
         [Required]
         [ForeignKey("User")]
-        public int UserID { get; set; }
+        public string UserID { get; set; }
         public User User { get; set; }
         [Required]
         [ForeignKey("Book")]

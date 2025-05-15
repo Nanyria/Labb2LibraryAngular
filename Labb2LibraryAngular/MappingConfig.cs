@@ -14,13 +14,13 @@ namespace FinalProjectLibrary
     {
         public MappingConfig()
         {
-            CreateMap<Book, BookDto>()
-                .ReverseMap()
-                .ForMember(dest => dest.StatusHistory, opt => opt.Ignore());
+            CreateMap<BookDto, Book>()
+                .ForMember(dest => dest.BookID, opt => opt.Ignore()) // Ignore BookID during mapping
+                .ForMember(dest => dest.StatusHistory, opt => opt.Ignore()) // Ignore lists
+                .ForMember(dest => dest.Reservations, opt => opt.Ignore())
+                .ForMember(dest => dest.CheckedOutBy, opt => opt.Ignore());
 
-            CreateMap<Book, UpdateBookStatusDTO>().ReverseMap();
-
-
+            CreateMap<Book, BookDto>();
 
             CreateMap<User, UserDto>()
                 .ReverseMap()
@@ -33,7 +33,7 @@ namespace FinalProjectLibrary
             CreateMap<User, UpdateUserAsAdminDto>().ReverseMap();
             CreateMap<User, UpdateUserDto>().ReverseMap();
 
-
+            CreateMap<CreateAdminUserDto, User>().ReverseMap();
 
             CreateMap<StatusHistoryItem, StatusHistoryItemDto>().ReverseMap();
             CreateMap<ReservationItem, ReservationItemDto>()

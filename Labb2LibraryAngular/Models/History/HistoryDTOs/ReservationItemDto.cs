@@ -7,7 +7,7 @@ namespace FinalProjectLibrary.Models
     {
 
         public int ID { get; set; }
-        public int UserID { get; set; }
+        public string UserID { get; set; }
         public string UserName { get; set; }
         public int BookID { get; set; }
         public string BookTitle { get; set; }

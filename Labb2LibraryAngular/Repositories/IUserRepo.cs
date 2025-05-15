@@ -6,18 +6,15 @@ namespace FinalProjectLibrary.Repositories
 {
     public interface IUserRepo
     {
-        
-        Task CreateUserAsync(User user);        
-        Task DeleteUser(User user);
-        Task UpdateUser(User user);
+        Task CreateAsync<T>(T entity) where T : User; 
+        Task DeleteAsync<T>(T entity) where T : User;
+        Task UpdateAsync<T>(T entity) where T : User;
+        Task<IEnumerable<T>> GetAllAsync<T>() where T : User;
+        Task<T> GetByIdAsync<T>(string id) where T : User; 
+        Task<T> GetByEmailAsync<T>(string email) where T : User; 
+        Task<T> GetByUserNameAsync<T>(string userName) where T : User;
 
-        Task<IEnumerable<User>> GetAllUsersAsync();
-        Task<User> GetUserByIdAsync(int id);
-        Task<User> GetUserByEmailAsync(string email);
-        Task<User> GetUserByUserNameAsync(string userName);
-
-
-        Task SaveUserAsync();
-        IQueryable<User> FindByCondition(Expression<Func<User, bool>> expression);
+        Task SaveAsync(); 
+        IQueryable<T> FindByCondition<T>(Expression<Func<T, bool>> expression) where T : User;
     }
 }

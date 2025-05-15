@@ -5,11 +5,11 @@ using System.Linq.Expressions;
 
 namespace FinalProjectLibrary.Repositories
 {
-    public class UserRepo : IUserRepo
+    public class AdminRepo : IUserRepo
     {
         private readonly AppDbContext _db;
 
-        public UserRepo(AppDbContext db)
+        public AdminRepo(AppDbContext db)
         {
             _db = db;
         }

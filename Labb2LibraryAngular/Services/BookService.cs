@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using FinalProjectLibrary.Data;
-using FinalProjectLibrary.Enums;
+using FinalProjectLibrary.Helpers.Enums;
 using FinalProjectLibrary.Models;
 using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Books.BookDTOs;
@@ -12,6 +12,7 @@ using FinalProjectLibrary.Repositories;
 using System.Net;
 using static FinalProjectLibrary.Models.Books.BookDTOs.BookDto;
 
+
 namespace FinalProjectLibrary.Services
 {
     public interface IBookService
@@ -20,9 +21,9 @@ namespace FinalProjectLibrary.Services
         Task<APIResponse<Book>> GetBookByIdAsync(int id);
         Task<APIResponse<List<Book>>> GetBooksByTitleAsync(string title);
         Task<APIResponse<List<Book>>> GetBooksByAuthorAsync(string author);
-        Task<APIResponse<Book>> AddBookAsync(Book book);
+        Task<APIResponse<Book>> AddBookAsync(BookDto book);
         Task<APIResponse<Book>> DeleteBookAsync(int id);
-        Task<APIResponse<Book>> UpdateBookInfoAsync(int id, Book bookDto);
+        Task<APIResponse<Book>> UpdateBookInfoAsync(int id, BookDto bookDto);
         Task<APIResponse<Book>> UpdateBookStatusAsync(Book book, User user, BookStatusEnum bookStatus, string? n);
     }
     public class BookService : IBookService
@@ -157,7 +158,7 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<Book>> AddBookAsync(Book book)
+        public async Task<APIResponse<Book>> AddBookAsync(BookDto bookDto)
         {
             var response = new APIResponse<Book>
             {
@@ -165,7 +166,7 @@ namespace FinalProjectLibrary.Services
                 StatusCode = HttpStatusCode.BadRequest
             };
 
-            if (string.IsNullOrEmpty(book.Title))
+            if (string.IsNullOrEmpty(bookDto.Title))
             {
                 response.ErrorMessages.Add("Title must not be empty.");
                 return response;
@@ -173,13 +174,14 @@ namespace FinalProjectLibrary.Services
 
             try
             {
-                book = new Book
+                var book = new Book
                 {
-                    Title = book.Title,
-                    Author = book.Author,
-                    Genre = book.Genre,
-                    BookDescription = book.BookDescription,
-                    PublicationYear = book.PublicationYear,
+                    Title = bookDto.Title,
+                    Author = bookDto.Author,
+                    Genre = bookDto.Genre,
+                    BookDescription = bookDto.BookDescription,
+                    PublicationYear = bookDto.PublicationYear,
+                    BookType = bookDto.BookType,    
                     BookStatus = BookStatusEnum.Available 
                 };
 
@@ -231,7 +233,7 @@ namespace FinalProjectLibrary.Services
             return response;
         }
 
-        public async Task<APIResponse<Book>> UpdateBookInfoAsync(int id, Book updatedBook)
+        public async Task<APIResponse<Book>> UpdateBookInfoAsync(int id, BookDto updatedBook)
         {
             var response = new APIResponse<Book>
             {
@@ -249,10 +251,10 @@ namespace FinalProjectLibrary.Services
                     existingBook.Genre = updatedBook.Genre != default ? updatedBook.Genre : existingBook.Genre;
                     existingBook.PublicationYear = updatedBook.PublicationYear != default ? updatedBook.PublicationYear : existingBook.PublicationYear;
                     existingBook.BookDescription = updatedBook.BookDescription ?? existingBook.BookDescription;
-
+                    existingBook.BookType = updatedBook.BookType != default ? updatedBook.BookType : existingBook.BookType;
                     await _bookRepo.SaveAsync();
 
-                    response.Result = updatedBook;
+                    response.Result = existingBook;
                     response.IsSuccess = true;
                     response.StatusCode = HttpStatusCode.OK;
                 }
@@ -295,7 +297,7 @@ namespace FinalProjectLibrary.Services
                 book.BookStatus = newBookStatus.BookStatus;
                 book.CheckedOutBy = newBookStatus.CheckedOutBy ?? book.CheckedOutBy;
                 book.Reservations = newBookStatus.Reservations ?? book.Reservations;
-                await _userRepo.UpdateUser(user);
+                await _userRepo.UpdateAsync(user);
                 await _bookRepo.UpdateAsync(book);
                 await _bookRepo.SaveAsync();
 
@@ -336,7 +338,7 @@ namespace FinalProjectLibrary.Services
         {
             var statusHistoryItem = new StatusHistoryItem
             {
-                UserID = user.UserID,
+                UserID = user.Id,
                 BookID = book.BookID,
                 BookStatus = bookStatus,
                 Timestamp = DateTime.UtcNow,

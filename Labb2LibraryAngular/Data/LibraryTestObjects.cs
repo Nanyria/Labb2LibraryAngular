@@ -1,6 +1,6 @@
 ﻿using FinalProjectLibrary.Models.Books;
-using FinalProjectLibrary.Enums;
 using FinalProjectLibrary.Models.History;
+using FinalProjectLibrary.Helpers.Enums;
 
 namespace FinalProjectLibrary.Data
 {

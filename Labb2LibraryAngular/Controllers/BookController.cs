@@ -1,9 +1,11 @@
-﻿using FinalProjectLibrary.Enums;
+﻿using FinalProjectLibrary.Helpers.Enums;
 using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Books.BookDTOs;
 using FinalProjectLibrary.Models.Users;
 using FinalProjectLibrary.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static FinalProjectLibrary.Models.Books.BookDTOs.BookDto;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -21,6 +23,7 @@ public class BookController : ControllerBase
     public async Task<IActionResult> GetAllBooks()
     {
         var response = await _bookService.GetAllBooksAsync();
+
         return StatusCode((int)response.StatusCode, response);
     }
 
@@ -44,30 +47,30 @@ public class BookController : ControllerBase
         var response = await _bookService.GetBooksByAuthorAsync(author);
         return StatusCode((int)response.StatusCode, response);
     }
-
+    [Authorize(Roles = AdminRoles.SuperAdmin + "," + AdminRoles.Librarian)]
     [HttpPost]
-    public async Task<IActionResult> AddBook([FromBody] Book book)
+    public async Task<IActionResult> AddBook([FromBody] BookDto book)
     {
         var response = await _bookService.AddBookAsync(book);
         return StatusCode((int)response.StatusCode, response);
     }
-
+    [Authorize(Roles = AdminRoles.SuperAdmin + "," + AdminRoles.Librarian)]
     [HttpDelete("{bookId:int}")]
     public async Task<IActionResult> DeleteBook(int bookId)
     {
         var response = await _bookService.DeleteBookAsync(bookId);
         return StatusCode((int)response.StatusCode, response);
     }
-
+    [Authorize(Roles = AdminRoles.SuperAdmin + "," + AdminRoles.Librarian)]
     [HttpPut("{bookId:int}")]
-    public async Task<IActionResult> UpdateBookInfo(int bookId, [FromBody] Book bookInfo)
+    public async Task<IActionResult> UpdateBookInfo(int bookId, [FromBody] BookDto bookInfo)
     {
         var response = await _bookService.UpdateBookInfoAsync(bookId, bookInfo);
         return StatusCode((int)response.StatusCode, response);
     }
-
-    [HttpPut("stock/{bookId:int}")]
-    public async Task<IActionResult> UpdateBookStatus(int bookId, int userId, BookStatusEnum bookStatus, string? notes)
+    [Authorize(Roles = AdminRoles.SuperAdmin + "," + AdminRoles.Librarian)]
+    [HttpPut("status/{bookId:int}")]
+    public async Task<IActionResult> UpdateBookStatus(int bookId, string userId, BookStatusEnum bookStatus, string? notes)
     {
         var bookResponse = await _bookService.GetBookByIdAsync(bookId);
         if (!bookResponse.IsSuccess)
