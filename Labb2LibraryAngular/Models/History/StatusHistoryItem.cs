@@ -3,6 +3,7 @@ using FinalProjectLibrary.Models.Books;
 using FinalProjectLibrary.Models.Users;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace FinalProjectLibrary.Models.History
 {
@@ -13,9 +14,11 @@ namespace FinalProjectLibrary.Models.History
         [ForeignKey("Book")]
         public int BookID { get; set; }
         [Required]
+        [JsonIgnore]
         public Book Book { get; set; }
         [ForeignKey("User")]
         public string? UserID { get; set; }
+        [JsonIgnore]
         public User? User { get; set; }
         [Required]
 

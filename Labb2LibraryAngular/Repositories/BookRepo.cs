@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FinalProjectLibrary.Data;
 using FinalProjectLibrary.Models.Books;
+using FinalProjectLibrary.Helpers.Enums;
 
 namespace FinalProjectLibrary.Repositories
 {
@@ -68,6 +69,13 @@ namespace FinalProjectLibrary.Repositories
         {
 
             _db.Books.Update(book);
+        }
+        public async Task<IEnumerable<Book>> GetByGenreAsync(GenreEnums genre)
+        {
+            return await _db.Books
+                .Include(b => b.StatusHistory)
+                .Where(b => b.Genre == genre)
+                .ToListAsync();
         }
     }
 }

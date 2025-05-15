@@ -92,5 +92,12 @@ namespace FinalProjectLibrary.Controllers
         //    var response = await _userService.ReturnBookAsync(userId, bookId);
         //    return StatusCode((int)response.StatusCode, response);
         //}
+
+        [HttpGet("history/{userId}")]
+        public async Task<IActionResult> GetUserHistory([FromRoute] string userId)
+        {
+            var response = await _userService.GetUserHistoryAsync(userId);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }

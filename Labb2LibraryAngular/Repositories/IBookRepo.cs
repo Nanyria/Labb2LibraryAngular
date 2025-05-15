@@ -1,4 +1,5 @@
-﻿using FinalProjectLibrary.Models.Books;
+﻿using FinalProjectLibrary.Helpers.Enums;
+using FinalProjectLibrary.Models.Books;
 using System.Net;
 
 namespace FinalProjectLibrary.Repositories
@@ -9,6 +10,7 @@ namespace FinalProjectLibrary.Repositories
         Task<Book> GetByIdAsync(int bookId);
         Task<IEnumerable<Book>> GetByTitleAsync(string title);
         Task<IEnumerable<Book>> GetByAuthorAsync(string author);
+        Task<IEnumerable<Book>> GetByGenreAsync(GenreEnums genre);
         Task CreateBookAsync(Book book);
         Task UpdateAsync(Book book);
         Task UpdateStatusAsync(int id, Book book);

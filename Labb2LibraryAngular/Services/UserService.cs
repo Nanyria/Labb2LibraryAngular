@@ -30,8 +30,11 @@ namespace FinalProjectLibrary.Services
         Task<APIResponse<User>> CheckOutBookAsync(string userId, int bookId);
         Task<APIResponse<User>> ReturnBookAsync(string userId, int bookId);
         Task<APIResponse<CreateAdminUserDto>> CreateAdminUserAsync(CreateAdminUserDto createAdminUserDto);
+        Task<APIResponse<List<ReservationItem>>> GetReservedBooksAsync(string userId);
+        Task<APIResponse<List<CheckedOutItem>>> GetCheckedOutBooksAsync(string userId);
+        Task<APIResponse<List<StatusHistoryItem>>> GetUserHistoryAsync(string userId);
     }
-    
+
     public class UserService : IUserService
     {
         private readonly IUserRepo _userRepo;
@@ -296,7 +299,7 @@ namespace FinalProjectLibrary.Services
                 response.ErrorMessages.Add(ex.Message);
                 response.StatusCode = HttpStatusCode.InternalServerError;
             }
-        
+
             return response;
         }
         public async Task<APIResponse<User>> ReserveBookAsync(string userId, int bookId)
@@ -331,9 +334,10 @@ namespace FinalProjectLibrary.Services
                     response.ErrorMessages.Add("Book already checked out by user.");
                     response.StatusCode = HttpStatusCode.Conflict;
                     return response;
-                };
+                }
+                ;
 
-                AddReservation(user, book); 
+                AddReservation(user, book);
 
                 await _bookService.UpdateBookStatusAsync(book, user, BookStatusEnum.Reserved, $"Book reserved by {user.UserName}"); // Update the book status to Reserved
 
@@ -351,7 +355,7 @@ namespace FinalProjectLibrary.Services
 
             return response;
         }
-        private void AddReservation (User user, Book book)
+        private void AddReservation(User user, Book book)
         {
             var reservation = new ReservationItem
             {
@@ -378,10 +382,10 @@ namespace FinalProjectLibrary.Services
                 user.ReservedBooks.Remove(reservationItem);
                 book.Reservations.Remove(reservationItem);
 
-                return true; 
+                return true;
             }
 
-            return false; 
+            return false;
         }
 
         public async Task<APIResponse<User>> CancelReservationAsync(string userId, int bookId)
@@ -447,8 +451,8 @@ namespace FinalProjectLibrary.Services
                 // Check if the book is reserved by the user
                 if (RemoveReservation(user, book) || book.BookStatus == BookStatusEnum.Available)
                 {
-                   SetCheckedOutBookAsync(user, book);
-                   await _bookService.UpdateBookStatusAsync(book, user, BookStatusEnum.CheckedOut, $"Checked out by {user.UserName}");
+                    SetCheckedOutBookAsync(user, book);
+                    await _bookService.UpdateBookStatusAsync(book, user, BookStatusEnum.CheckedOut, $"Checked out by {user.UserName}");
                 }
 
                 else
@@ -535,6 +539,78 @@ namespace FinalProjectLibrary.Services
             return false;
         }
 
+        public async Task<APIResponse<List<ReservationItem>>> GetReservedBooksAsync(string userId)
+        {
+            var response = new APIResponse<List<ReservationItem>>
+            {
+                IsSuccess = false,
+                StatusCode = HttpStatusCode.BadRequest
+            };
+            var user = await _userRepo.GetByIdAsync<User>(userId);
+            if (user != null)
+            {
+                response.IsSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = user.ReservedBooks
+                    .OrderByDescending(r => r.ReservationDate)
+                    .ToList();
+            }
+            else
+            {
+                response.ErrorMessages.Add("User not found.");
+                response.StatusCode = HttpStatusCode.NotFound;
+            }
+            return response;
+
+
+        }
+
+        public async Task<APIResponse<List<CheckedOutItem>>> GetCheckedOutBooksAsync(string userId)
+        {
+            var response = new APIResponse<List<CheckedOutItem>>
+            {
+                IsSuccess = false,
+                StatusCode = HttpStatusCode.BadRequest
+            };
+            var user = await _userRepo.GetByIdAsync<User>(userId);
+            if (user != null)
+            {
+                response.IsSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = user.CheckedOutBooks
+                    .OrderByDescending(r => r.CheckOutDate)
+                    .ToList();
+            }
+            else
+            {
+                response.ErrorMessages.Add("User not found.");
+                response.StatusCode = HttpStatusCode.NotFound;
+            }
+            return response;
+        }
+        public async Task<APIResponse<List<StatusHistoryItem>>> GetUserHistoryAsync(string userId)
+        {
+            var response = new APIResponse<List<StatusHistoryItem>>
+            {
+                IsSuccess = false,
+                StatusCode = HttpStatusCode.BadRequest
+            };
+            var user = await _userRepo.GetByIdAsync<User>(userId);
+            if (user != null)
+            {
+                response.IsSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = user.UserHistory
+                    .OrderByDescending(r => r.Timestamp)
+                    .ToList();
+            }
+            else
+            {
+                response.ErrorMessages.Add("User not found.");
+                response.StatusCode = HttpStatusCode.NotFound;
+            }
+            return response;
+        }
+    }
 
     }
-}

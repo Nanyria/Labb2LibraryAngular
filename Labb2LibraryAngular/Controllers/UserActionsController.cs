@@ -51,5 +51,20 @@ namespace FinalProjectLibrary.Controllers
             var response = await _userService.ReturnBookAsync(userId, bookId);
             return StatusCode((int)response.StatusCode, response);
         }
+
+
+
+        [HttpGet("reserved/{userId}")]
+        public async Task<IActionResult> GetReservedBooks([FromRoute] string userId)
+        {
+            var response = await _userService.GetReservedBooksAsync(userId);
+            return StatusCode((int)response.StatusCode, response);
+        }
+        [HttpGet("checkedout/{userId}")]
+        public async Task<IActionResult> GetCheckedOutBooks([FromRoute] string userId)
+        {
+            var response = await _userService.GetCheckedOutBooksAsync(userId);
+            return StatusCode((int)response.StatusCode, response);
+        }
     }
 }
