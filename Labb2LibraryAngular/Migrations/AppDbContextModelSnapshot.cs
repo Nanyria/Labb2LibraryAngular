@@ -200,7 +200,7 @@ namespace FinalProjectLibrary.Migrations
                             BookID = 1001,
                             BookStatus = 0,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 14, 8, 33, 5, 627, DateTimeKind.Utc).AddTicks(2507)
+                            Timestamp = new DateTime(2025, 5, 14, 8, 51, 17, 597, DateTimeKind.Utc).AddTicks(2471)
                         },
                         new
                         {
@@ -208,7 +208,7 @@ namespace FinalProjectLibrary.Migrations
                             BookID = 1002,
                             BookStatus = 2,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 13, 8, 33, 5, 627, DateTimeKind.Utc).AddTicks(2514)
+                            Timestamp = new DateTime(2025, 5, 13, 8, 51, 17, 597, DateTimeKind.Utc).AddTicks(2476)
                         },
                         new
                         {
@@ -216,7 +216,7 @@ namespace FinalProjectLibrary.Migrations
                             BookID = 1003,
                             BookStatus = 1,
                             Notes = "Initial status",
-                            Timestamp = new DateTime(2025, 5, 12, 8, 33, 5, 627, DateTimeKind.Utc).AddTicks(2516)
+                            Timestamp = new DateTime(2025, 5, 12, 8, 51, 17, 597, DateTimeKind.Utc).AddTicks(2478)
                         });
                 });
 

@@ -10,16 +10,13 @@ namespace FinalProjectLibrary.Models.Users
 
         [Required]
         [MaxLength(100)]
-        public required string UserName { get; set; }
-        [Required]
-        [MaxLength(100)]
+
         public required string FirstName { get; set; }
         [Required]
         [MaxLength(100)]
         public required string LastName { get; set; }
-        [Required]
-        [MaxLength(100)]
-        public required string Email { get; set; }
+
+
 
         public List<CheckedOutItem> CheckedOutBooks { get; set; } = new List<CheckedOutItem>();
         public List<ReservationItem> ReservedBooks { get; set; } = new List<ReservationItem>();

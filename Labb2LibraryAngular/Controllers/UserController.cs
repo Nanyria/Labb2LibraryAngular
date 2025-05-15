@@ -59,7 +59,7 @@ namespace FinalProjectLibrary.Controllers
         //    var response = await _userService.UpdateUserAsync(userId, updateUserDto);
         //    return StatusCode((int)response.StatusCode, response);
         //}
-        //[HttpGet("{userId}")]
+        [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserById([FromRoute] string userId)
         {
             var response = await _userService.GetUserByIdAsync(userId);

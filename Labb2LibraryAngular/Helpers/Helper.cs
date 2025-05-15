@@ -19,12 +19,28 @@ namespace FinalProjectLibrary.Helpers
                         await roleManager.CreateAsync(new IdentityRole(role));
                 }
 
-                // Example: Assign SuperAdmin role to a user
-                var admin = await userManager.FindByEmailAsync("admin@example.com");
-                if (admin != null && !await userManager.IsInRoleAsync(admin, "SuperAdmin"))
+                var superAdminEmail = "nathaleewi@hotmail.com";
+                var superAdminUser = await userManager.FindByEmailAsync(superAdminEmail);
+                if (superAdminUser == null)
                 {
-                    await userManager.AddToRoleAsync(admin, "SuperAdmin");
+                    superAdminUser = new User
+                    {
+                        UserName = "Nanyria",
+                        Email = superAdminEmail,
+                        FirstName = "Nathalee",
+                        LastName = "Wilund",
+                        EmailConfirmed = true
+                    };
+                    var createResult = await userManager.CreateAsync(superAdminUser, "SuperSecurePassword123!");
+                    if (!createResult.Succeeded)
+                    {
+                        // Log or throw the errors for debugging
+                        var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                        throw new Exception($"Failed to create SuperAdmin user: {errors}");
+                    }
+                    await userManager.AddToRoleAsync(superAdminUser, "SuperAdmin");
                 }
+            
             }
         }
 

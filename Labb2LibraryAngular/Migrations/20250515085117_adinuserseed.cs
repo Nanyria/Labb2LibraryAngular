@@ -6,78 +6,56 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FinalProjectLibrary.Migrations
 {
     /// <inheritdoc />
-    public partial class admin : Migration
+    public partial class adinuserseed : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "AdminRole",
-                table: "Users",
-                type: "nvarchar(max)",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "Discriminator",
-                table: "Users",
-                type: "nvarchar(13)",
-                maxLength: 13,
-                nullable: false,
-                defaultValue: "");
-
             migrationBuilder.UpdateData(
                 table: "StatusHistoryItems",
                 keyColumn: "StatusHistoryItemID",
                 keyValue: 1001,
                 column: "Timestamp",
-                value: new DateTime(2025, 5, 13, 16, 26, 57, 704, DateTimeKind.Utc).AddTicks(2829));
+                value: new DateTime(2025, 5, 14, 8, 51, 17, 597, DateTimeKind.Utc).AddTicks(2471));
 
             migrationBuilder.UpdateData(
                 table: "StatusHistoryItems",
                 keyColumn: "StatusHistoryItemID",
                 keyValue: 1002,
                 column: "Timestamp",
-                value: new DateTime(2025, 5, 12, 16, 26, 57, 704, DateTimeKind.Utc).AddTicks(2834));
+                value: new DateTime(2025, 5, 13, 8, 51, 17, 597, DateTimeKind.Utc).AddTicks(2476));
 
             migrationBuilder.UpdateData(
                 table: "StatusHistoryItems",
                 keyColumn: "StatusHistoryItemID",
                 keyValue: 1003,
                 column: "Timestamp",
-                value: new DateTime(2025, 5, 11, 16, 26, 57, 704, DateTimeKind.Utc).AddTicks(2836));
+                value: new DateTime(2025, 5, 12, 8, 51, 17, 597, DateTimeKind.Utc).AddTicks(2478));
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "AdminRole",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "Discriminator",
-                table: "Users");
-
             migrationBuilder.UpdateData(
                 table: "StatusHistoryItems",
                 keyColumn: "StatusHistoryItemID",
                 keyValue: 1001,
                 column: "Timestamp",
-                value: new DateTime(2025, 5, 13, 15, 58, 8, 551, DateTimeKind.Utc).AddTicks(2746));
+                value: new DateTime(2025, 5, 14, 8, 37, 51, 320, DateTimeKind.Utc).AddTicks(8788));
 
             migrationBuilder.UpdateData(
                 table: "StatusHistoryItems",
                 keyColumn: "StatusHistoryItemID",
                 keyValue: 1002,
                 column: "Timestamp",
-                value: new DateTime(2025, 5, 12, 15, 58, 8, 551, DateTimeKind.Utc).AddTicks(2751));
+                value: new DateTime(2025, 5, 13, 8, 37, 51, 320, DateTimeKind.Utc).AddTicks(8795));
 
             migrationBuilder.UpdateData(
                 table: "StatusHistoryItems",
                 keyColumn: "StatusHistoryItemID",
                 keyValue: 1003,
                 column: "Timestamp",
-                value: new DateTime(2025, 5, 11, 15, 58, 8, 551, DateTimeKind.Utc).AddTicks(2752));
+                value: new DateTime(2025, 5, 12, 8, 37, 51, 320, DateTimeKind.Utc).AddTicks(8796));
         }
     }
 }
