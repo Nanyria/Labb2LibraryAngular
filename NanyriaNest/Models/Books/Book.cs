@@ -27,6 +27,8 @@ namespace FinalProjectLibrary.Models.Books
         public List<ReservationItem> Reservations { get; set; } = new();
         public CheckedOutItem? CheckedOutBy { get; set; }
 
+        // Lägga till - List<Review>, List<Rating>, List<Favorite>, List<ReadBook>
+
 
     }
 }
